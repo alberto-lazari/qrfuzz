@@ -1,0 +1,49 @@
+#!/bin/bash
+# set -e
+
+script_dir="$(dirname "$(readlink -f "$BASH_SOURCE")")"
+
+if [[ $(uname -m) = arm64 ]]; then
+    arch=arm64-v8a
+else
+    arch=x86_64
+fi
+system_image="system-images;android-34;google_apis;$arch"
+
+if which brew &> /dev/null; then
+    prefix="$(brew --prefix)/share/android-commandlinetools"
+    brew install android-commandlinetools
+else
+    prefix=~/Library/Android/sdk
+    [[ -d "$prefix" ]] || mkdir -p "$prefix/cmdline-tools"
+
+    # Get from curl
+    if ! [[ -d "$prefix/cmdline-tools/latest" ]]; then
+        curl -L 'https://dl.google.com/android/repository/commandlinetools-mac-10406996_latest.zip' |
+            tar -xpf -
+        mv cmdline-tools "$prefix/cmdline-tools/latest"
+    fi
+fi
+
+"$prefix/cmdline-tools/latest/bin/sdkmanager" --install \
+    'platform-tools' \
+    'platforms;android-34' \
+    'build-tools;34.0.0-rc3' \
+    $system_image
+
+echo Creating virtual device...
+echo no | "$prefix/cmdline-tools/latest/bin/avdmanager" create avd > /dev/null \
+    --force \
+    -n qrfuzz \
+    -k $system_image
+
+# Enable buttons
+sed -i'' -e 's/^hw\.keyboard=no/hw.keyboard=yes/' ~/.android/avd/qrfuzz.avd/config.ini
+
+# Download x86 emulator
+if [[ $arch = x86_64 ]] && [[ ! -d "$prefix/emulator-x86" ]]; then
+    curl -L 'https://redirector.gvt1.com/edgedl/android/repository/emulator-darwin_x64-10696886.zip' |
+        tar -xpf -
+    chmod +x emulator/emulator emulator/qemu/darwin-x86_64/qemu-system-x86_64
+    mv emulator "$prefix/emulator-x86/"
+fi
