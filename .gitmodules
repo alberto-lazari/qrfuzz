@@ -1,0 +1,3 @@
+[submodule "QRFuzz"]
+	path = QRFuzz
+	url = https://github.com/spritz-group/QRFuzz.git
