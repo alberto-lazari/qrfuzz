@@ -3,12 +3,12 @@ set -e
 
 script_dir="$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
-if [[ $(uname -m) = arm64 ]]; then
+if uname -m | grep -Eq '^(arm|aarch)64$'; then
     arch=arm64-v8a
 else
     arch=x86_64
 fi
-system_image="system-images;android-34;google_apis;$arch"
+system_image="system-images;android-34;google_apis_playstore;$arch"
 device=qrfuzz
 
 if which brew &> /dev/null; then
