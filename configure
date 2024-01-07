@@ -3,6 +3,17 @@ set -e
 
 script_dir="$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
+if [[ $(uname) = Darwin ]]; then
+    os=mac
+    prefix=~/Library/Android/sdk
+elif [[ $(uname) = Linux ]]; then
+    os=linux
+    prefix=~/Android/sdk
+else
+    echo OS not supported >&2
+    exit 1
+fi
+
 if uname -m | grep -Eq '^(arm|aarch)64$'; then
     arch=arm64-v8a
 else
@@ -16,19 +27,21 @@ if which brew &> /dev/null; then
     which "$prefix/cmdline-tools/latest/bin/sdkmanager" > /dev/null ||
         brew install android-commandlinetools
 else
-    prefix=~/Library/Android/sdk
     [[ -d "$prefix" ]] || mkdir -p "$prefix/cmdline-tools"
 
     # Get from curl
     if ! [[ -d "$prefix/cmdline-tools/latest" ]]; then
-        curl -L 'https://dl.google.com/android/repository/commandlinetools-mac-10406996_latest.zip' |
-            tar -xpf -
-        mv cmdline-tools "$prefix/cmdline-tools/latest"
+        link="https://dl.google.com/android/repository/commandlinetools-$os-10406996_latest.zip"
+        echo "Downloading Android SDK from $link"
+        curl -Lo out.zip "$link"
+        echo Extracting downloaded package...
+        unzip -q out.zip -d "$prefix/cmdline-tools" && rm out.zip
+        mv "$prefix/cmdline-tools/cmdline-tools" "$prefix/cmdline-tools/latest"
     fi
 fi
 
-"$prefix/cmdline-tools/latest/bin/sdkmanager" --install \
-    'platform-tools' \
+"$prefix/cmdline-tools/latest/bin/sdkmanager" \
+    platform-tools \
     'platforms;android-34' \
     $system_image
 
