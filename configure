@@ -53,6 +53,3 @@ echo no | "$prefix/cmdline-tools/latest/bin/avdmanager" create avd > /dev/null \
 
 # Enable buttons
 sed -i'' -e 's/^hw\.keyboard=no/hw.keyboard=yes/' ~/.android/avd/$device.avd/config.ini
-# Enable webcam
-# might be something like webcam0, webcam1, ... you'll need to do some trial-and-error
-sed -i'' -e 's/^hw\.camera\.back=emulated/hw.camera.back=webcam1/' ~/.android/avd/$device.avd/config.ini
