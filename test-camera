@@ -7,6 +7,7 @@ trap '&> /dev/null killall -r ffmpeg qemu-system-.*' EXIT INT TERM
 qr=example-qr.png
 emulator="$HOME/Android/sdk/emulator/emulator"
 adb="$HOME/Android/sdk/platform-tools/adb"
+qr_app_package=com.example.barcodescanner
 
 # Enable dummy camera
 if ! ( lsmod | grep -q v4l2loopback ); then
@@ -35,12 +36,22 @@ webcam=$("$emulator" -webcam-list | grep $device | grep -o 'webcam[0-9]*') || {
 # Launch the emulator
 &> /tmp/emulator.log "$emulator" -avd qrfuzz -camera-back $webcam &
 
-# Start the camera application
+# Download the QR scanner app
+[[ -f $qr_app_package.apk ]] ||
+    curl 'https://f-droid.org/repo/com.example.barcodescanner_13.apk' -o $qr_app_package.apk
+
 echo Waiting for the emulator to start... >&2
-while ! ( "$adb" devices | grep -q '^emulator-[0-9]*\s*device$' ); do
-    sleep 1
-done
-"$adb" shell am start -n com.android.camera2/com.android.camera.CameraLauncher
+"$adb" wait-for-device
+
+# Install the app
+if "$adb" shell pm list packages | grep -q $qr_app_package; then
+    "$adb" uninstall $qr_app_package
+fi
+"$adb" install $qr_app_package.apk
+# Automatically grant permission
+"$adb" shell pm grant $qr_app_package android.permission.CAMERA
+# Launch the app
+"$adb" shell am start -n $qr_app_package/$qr_app_package.feature.tabs.BottomTabsActivity
 
 # Keep logcat running
-"$adb" logcat
+"$adb" logcat | grep QR
