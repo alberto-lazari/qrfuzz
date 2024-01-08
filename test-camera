@@ -1,0 +1,26 @@
+#/bin/bash
+set -e
+
+emulator="$HOME/Android/sdk/emulator/emulator"
+
+# Enable dummy camera
+if ! ( lsmod | grep -q v4l2loopback ); then
+    echo 'Loading v4l2loopback kernel module...'
+    sudo modprobe v4l2loopback
+fi
+
+# Find virtual camera device
+device="$(v4l2-ctl --list-device | tr '\n' ' ' | sed 's|Dummy video device[^/]*\(/dev/video[0-9]*\).*|\1\n|')"
+if ! grep -q '^/dev/video[0-9]*$' <<< "$device"; then
+    echo Virtual webcam not found >&2
+    exit 1
+fi
+&> /tmp/ffmpeg.log ffmpeg -loop 1 -re -i example-qr.png -f v4l2 -vcodec rawvideo -pix_fmt yuv420p $device &
+trap 'killall ffmpeg' EXIT
+
+sleep 1
+webcam=$("$emulator" -webcam-list | grep $device | grep -o 'webcam[0-9]*') || {
+    echo Android emulator is unable to find the virtual webcam >&2
+    exit 1
+}
+"$emulator" -avd qrfuzz -camera-back webcam1
