@@ -4,7 +4,7 @@ set -e
 # Automatically kill ffmpeg and the emulator on exit
 trap '&> /dev/null killall -r ffmpeg qemu-system-.*' EXIT INT TERM
 
-qr=example-qr.png
+qr_video=qr.mp4
 emulator="$HOME/Android/sdk/emulator/emulator"
 adb="$HOME/Android/sdk/platform-tools/adb"
 qr_app_package=com.example.barcodescanner
@@ -23,7 +23,11 @@ if ! grep -q '^/dev/video[0-9]*$' <<< "$device"; then
 fi
 
 # Start video stream to virtual webcam
-&> /tmp/ffmpeg.log ffmpeg -loop 1 -re -i "$qr" -f v4l2 -vcodec rawvideo -pix_fmt yuv420p $device &
+# Use video
+&> /tmp/ffmpeg.log ffmpeg \
+    -stream_loop -1 \
+    -re -i "$qr_video" \
+    -f v4l2 $device &
 
 # Wait for ffmpeg to start the stream
 sleep 1
