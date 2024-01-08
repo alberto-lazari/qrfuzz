@@ -1,7 +1,12 @@
 #/bin/bash
 set -e
 
+# Automatically kill ffmpeg and the emulator on exit
+trap '&> /dev/null killall -r ffmpeg qemu-system-.*' EXIT INT TERM
+
+qr=example-qr.png
 emulator="$HOME/Android/sdk/emulator/emulator"
+adb="$HOME/Android/sdk/platform-tools/adb"
 
 # Enable dummy camera
 if ! ( lsmod | grep -q v4l2loopback ); then
@@ -15,12 +20,27 @@ if ! grep -q '^/dev/video[0-9]*$' <<< "$device"; then
     echo Virtual webcam not found >&2
     exit 1
 fi
-&> /tmp/ffmpeg.log ffmpeg -loop 1 -re -i example-qr.png -f v4l2 -vcodec rawvideo -pix_fmt yuv420p $device &
-trap 'killall ffmpeg' EXIT
 
+# Start video stream to virtual webcam
+&> /tmp/ffmpeg.log ffmpeg -loop 1 -re -i "$qr" -f v4l2 -vcodec rawvideo -pix_fmt yuv420p $device &
+
+# Wait for ffmpeg to start the stream
 sleep 1
+# Get webcam name from emulator
 webcam=$("$emulator" -webcam-list | grep $device | grep -o 'webcam[0-9]*') || {
     echo Android emulator is unable to find the virtual webcam >&2
     exit 1
 }
-"$emulator" -avd qrfuzz -camera-back webcam1
+
+# Launch the emulator
+&> /tmp/emulator.log "$emulator" -avd qrfuzz -camera-back $webcam &
+
+# Start the camera application
+echo Waiting for the emulator to start... >&2
+while ! ( "$adb" devices | grep -q '^emulator-[0-9]*\s*device$' ); do
+    sleep 1
+done
+"$adb" shell am start -n com.android.camera2/com.android.camera.CameraLauncher
+
+# Keep logcat running
+"$adb" logcat
