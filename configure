@@ -40,7 +40,7 @@ else
     fi
 fi
 
-"$prefix/cmdline-tools/latest/bin/sdkmanager" \
+echo yes | "$prefix/cmdline-tools/latest/bin/sdkmanager" \
     platform-tools \
     'platforms;android-34' \
     $system_image
