@@ -46,7 +46,7 @@ webcam=$("$emulator" -webcam-list | grep $device | grep -o 'webcam[0-9]*') || {
 
 echo Waiting for the emulator to start... >&2
 "$adb" wait-for-device
-sleep 60
+# sleep 45
 
 # Install the app
 if "$adb" shell pm list packages | grep -q $qr_app_package; then
@@ -59,4 +59,4 @@ fi
 "$adb" shell am start -n $qr_app_package/$qr_app_package.feature.tabs.BottomTabsActivity
 
 # Keep logcat running
-"$adb" logcat | grep QR
+"$adb" logcat
