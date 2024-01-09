@@ -22,22 +22,16 @@ fi
 system_image="system-images;android-34;google_apis_playstore;$arch"
 device=qrfuzz
 
-if which brew &> /dev/null; then
-    prefix="$(brew --prefix)/share/android-commandlinetools"
-    which "$prefix/cmdline-tools/latest/bin/sdkmanager" > /dev/null ||
-        brew install android-commandlinetools
-else
-    [[ -d "$prefix" ]] || mkdir -p "$prefix/cmdline-tools"
+[[ -d "$prefix" ]] || mkdir -p "$prefix/cmdline-tools"
 
-    # Get from curl
-    if ! [[ -d "$prefix/cmdline-tools/latest" ]]; then
-        link="https://dl.google.com/android/repository/commandlinetools-$os-10406996_latest.zip"
-        echo "Downloading Android SDK from $link"
-        curl -Lo out.zip "$link"
-        echo Extracting downloaded package...
-        unzip -q out.zip -d "$prefix/cmdline-tools" && rm out.zip
-        mv "$prefix/cmdline-tools/cmdline-tools" "$prefix/cmdline-tools/latest"
-    fi
+# Get from curl
+if ! [[ -d "$prefix/cmdline-tools/latest" ]]; then
+    link="https://dl.google.com/android/repository/commandlinetools-$os-10406996_latest.zip"
+    echo "Downloading Android SDK from $link"
+    curl -Lo out.zip "$link"
+    echo Extracting downloaded package...
+    unzip -q out.zip -d "$prefix/cmdline-tools" && rm out.zip
+    mv "$prefix/cmdline-tools/cmdline-tools" "$prefix/cmdline-tools/latest"
 fi
 
 echo yes | "$prefix/cmdline-tools/latest/bin/sdkmanager" \

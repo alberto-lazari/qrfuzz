@@ -16,7 +16,7 @@ if ! ( lsmod | grep -q v4l2loopback ); then
 fi
 
 # Find virtual camera device
-device="$(v4l2-ctl --list-device | tr '\n' ' ' | sed 's|Dummy video device[^/]*\(/dev/video[0-9]*\).*|\1\n|')"
+device="/dev/$(ls /sys/devices/virtual/video4linux 2> /dev/null | head -1)"
 if ! grep -q '^/dev/video[0-9]*$' <<< "$device"; then
     echo Virtual webcam not found >&2
     exit 1
@@ -46,6 +46,7 @@ webcam=$("$emulator" -webcam-list | grep $device | grep -o 'webcam[0-9]*') || {
 
 echo Waiting for the emulator to start... >&2
 "$adb" wait-for-device
+sleep 60
 
 # Install the app
 if "$adb" shell pm list packages | grep -q $qr_app_package; then
