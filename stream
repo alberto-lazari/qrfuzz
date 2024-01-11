@@ -1,0 +1,71 @@
+#!/bin/bash
+# Start a video stream on v4l2loopback virtual camera
+# Use either an image (png/jpg) or a video (mp4) source
+# Returns the device `/dev/videoN` on which ffmpeg is streaming
+# Returns the stream PID in `/tmp/stream.pid`
+set -e
+
+pid_file=/tmp/stream.pid
+
+if [[ -n "$1" ]]; then
+    src="$1"
+else
+    cat >&2 <<- EOF
+	usage: stream SOURCE
+      SOURCE    image or video file to stream (PNG|JPEG|MP4)
+	EOF
+    exit 1
+fi
+
+# Enable dummy camera
+lsmod | grep -q v4l2loopback || {
+    echo $*: loading v4l2loopback kernel module
+    sudo modprobe v4l2loopback
+}
+
+which ffmpeg &> /dev/null || {
+    echo $*: ffmpeg is needed for the stream, but it was not found >&2
+    exit 1
+}
+
+# Find virtual camera device
+device="/dev/$(ls /sys/devices/virtual/video4linux 2> /dev/null | head -1)"
+grep -q '^/dev/video[0-9]*$' <<< "$device" || {
+    echo $*: virtual webcam not found >&2
+    exit 1
+}
+
+# Close the currently running stream, if any
+if [[ -f "$pid_file" ]] && ps -p $(cat "$pid_file") &> /dev/null; then
+    kill $(cat "$pid_file")
+fi
+
+# Start video stream to virtual webcam
+shopt -s nocasematch
+case "$1" in
+    *.png | *.jpg | *.jpeg)
+        ffmpeg &> /tmp/ffmpeg.log \
+            -loop 1 \
+            -re -i "$src" \
+            -f v4l2 \
+            -vcodec rawvideo \
+            -pix_fmt yuv420p \
+            $device \
+            &
+        ;;
+    *.mp4)
+        ffmpeg &> /tmp/ffmpeg.log \
+            -stream_loop -1 \
+            -re -i "$src" \
+            -f v4l2 \
+            $device \
+            &
+        ;;
+esac
+shopt -u nocasematch
+
+# Save the stream PID
+echo $! > "$pid_file"
+
+# Return the device
+echo $device

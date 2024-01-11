@@ -1,54 +1,47 @@
 #/bin/bash
 set -e
-
-# Automatically kill ffmpeg and the emulator on exit
-trap '&> /dev/null killall -r ffmpeg qemu-system-.*' EXIT INT TERM
+cd "$(dirname "$BASH_SOURCE")"
 
 [[ -n "$ANDROID_HOME" ]] ||
     export ANDROID_HOME="$HOME/Android/Sdk"
 which emulator adb &> /dev/null ||
     export PATH="$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH"
 
-qr_video=qr.mp4
+which emulator adb &> /dev/null || {
+    cat >&2 <<- EOF
+	Android SDK not found
+	It is expected to be in \$ANDROID_HOME: ${ANDROID_HOME/$HOME/\~}
+	EOF
+    exit 1
+}
+
+qr=qr.mp4
 qr_app_package=com.example.barcodescanner
 
 # Repeatedly try to execute a command
+# usage: try COMMAND
 try () {
     [[ -n "$1" ]] || {
         echo try function: bad usage >&2
         return 1
     }
-    echo -n Trying \`$*\` >&2
+    echo trying \`$*\` >&2
+    tries=1
     until "$@" &> /dev/null; do
-        echo -n . >&2
-        sleep 2
+        let tries++
+        echo tries: $tries >&2
+        echo -n $(tput cuu1) >&2
+        sleep 1
     done
-    echo ''
 }
 
-# Enable dummy camera
-if ! ( lsmod | grep -q v4l2loopback ); then
-    echo 'Loading v4l2loopback kernel module...'
-    sudo modprobe v4l2loopback
-fi
+# Automatically kill ffmpeg and the emulator on exit
+trap 'kill $ffmpeg_pid $emulator_pid &> /dev/null' EXIT INT TERM
 
-# Find virtual camera device
-device="/dev/$(ls /sys/devices/virtual/video4linux 2> /dev/null | head -1)"
-if ! grep -q '^/dev/video[0-9]*$' <<< "$device"; then
-    echo Virtual webcam not found >&2
-    exit 1
-fi
-
-# Start video stream to virtual webcam
-# Use video
-ffmpeg &> /tmp/ffmpeg.log \
-    -stream_loop -1 \
-    -re -i "$qr_video" \
-    -f v4l2 $device \
-    &
-
+device=$(./stream "$qr")
+ffmpeg_pid=$(cat /tmp/stream.pid)
 # Wait for ffmpeg to start the stream
-sleep 1
+sleep .1
 # Get webcam name from emulator
 webcam=$(emulator -webcam-list | grep $device | grep -o 'webcam[0-9]*') || {
     echo Android emulator is unable to find the virtual webcam >&2
@@ -59,8 +52,8 @@ webcam=$(emulator -webcam-list | grep $device | grep -o 'webcam[0-9]*') || {
 emulator &> /tmp/emulator.log \
     -avd qrfuzz \
     -camera-back $webcam \
-    # -no-snapshot \
     &
+emulator_pid=$!
 
 # Download the QR scanner app
 [[ -f $qr_app_package.apk ]] ||
@@ -77,7 +70,9 @@ try adb install $qr_app_package.apk
 # Automatically grant permission
 try adb shell pm grant $qr_app_package android.permission.CAMERA
 # Launch the app
-try adb shell am start -n $qr_app_package/$qr_app_package.feature.tabs.BottomTabsActivity
+try adb shell "am start -n $qr_app_package/$qr_app_package.feature.tabs.BottomTabsActivity && \
+    dumpsys activity activities | grep mFocusedWindow.*$qr_app_package"
+echo 'done     '
 
 # Keep logcat running
 adb logcat &> /tmp/logcat.log
