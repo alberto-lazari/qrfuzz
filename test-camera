@@ -12,6 +12,20 @@ which emulator adb &> /dev/null ||
 qr_video=qr.mp4
 qr_app_package=com.example.barcodescanner
 
+# Repeatedly try to execute a command
+try () {
+    [[ -n "$1" ]] || {
+        echo try function: bad usage >&2
+        return 1
+    }
+    echo -n Trying \`$*\` >&2
+    until "$@" &> /dev/null; do
+        echo -n . >&2
+        sleep 2
+    done
+    echo ''
+}
+
 # Enable dummy camera
 if ! ( lsmod | grep -q v4l2loopback ); then
     echo 'Loading v4l2loopback kernel module...'
@@ -45,6 +59,7 @@ webcam=$(emulator -webcam-list | grep $device | grep -o 'webcam[0-9]*') || {
 emulator &> /tmp/emulator.log \
     -avd qrfuzz \
     -camera-back $webcam \
+    # -no-snapshot \
     &
 
 # Download the QR scanner app
@@ -53,24 +68,16 @@ emulator &> /tmp/emulator.log \
 
 echo Waiting for the emulator to start... >&2
 adb wait-for-device
-# The emulator could be still booting. Wait until it is actually ready
-until adb shell pm list packages &> /dev/null; do
-    sleep 2
-done
 
 # Install the app
-if adb shell pm list packages | grep -q $qr_app_package; then
-    until adb uninstall $qr_app_package &> /dev/null; do
-        sleep 2
-    done
+if try adb shell pm list packages | grep -q $qr_app_package; then
+    try adb uninstall $qr_app_package
 fi
-until adb install $qr_app_package.apk &> /dev/null; do
-    sleep 2
-done
+try adb install $qr_app_package.apk
 # Automatically grant permission
-adb shell pm grant $qr_app_package android.permission.CAMERA
+try adb shell pm grant $qr_app_package android.permission.CAMERA
 # Launch the app
-adb shell am start -n $qr_app_package/$qr_app_package.feature.tabs.BottomTabsActivity
+try adb shell am start -n $qr_app_package/$qr_app_package.feature.tabs.BottomTabsActivity
 
 # Keep logcat running
-adb logcat
+adb logcat &> /tmp/logcat.log
