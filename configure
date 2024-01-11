@@ -1,14 +1,12 @@
 #!/bin/bash
 set -e
 
-script_dir="$(dirname "$(readlink -f "$BASH_SOURCE")")"
-
 if [[ $(uname) = Darwin ]]; then
     os=mac
     prefix=~/Library/Android/sdk
 elif [[ $(uname) = Linux ]]; then
     os=linux
-    prefix=~/Android/sdk
+    prefix=~/Android/Sdk
 else
     echo OS not supported >&2
     exit 1

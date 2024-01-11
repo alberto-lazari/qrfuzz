@@ -4,9 +4,12 @@ set -e
 # Automatically kill ffmpeg and the emulator on exit
 trap '&> /dev/null killall -r ffmpeg qemu-system-.*' EXIT INT TERM
 
+[[ -n "$ANDROID_HOME" ]] ||
+    export ANDROID_HOME="$HOME/Android/Sdk"
+which emulator adb &> /dev/null ||
+    export PATH="$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH"
+
 qr_video=qr.mp4
-emulator="$HOME/Android/sdk/emulator/emulator"
-adb="$HOME/Android/sdk/platform-tools/adb"
 qr_app_package=com.example.barcodescanner
 
 # Enable dummy camera
@@ -24,39 +27,50 @@ fi
 
 # Start video stream to virtual webcam
 # Use video
-&> /tmp/ffmpeg.log ffmpeg \
+ffmpeg &> /tmp/ffmpeg.log \
     -stream_loop -1 \
     -re -i "$qr_video" \
-    -f v4l2 $device &
+    -f v4l2 $device \
+    &
 
 # Wait for ffmpeg to start the stream
 sleep 1
 # Get webcam name from emulator
-webcam=$("$emulator" -webcam-list | grep $device | grep -o 'webcam[0-9]*') || {
+webcam=$(emulator -webcam-list | grep $device | grep -o 'webcam[0-9]*') || {
     echo Android emulator is unable to find the virtual webcam >&2
     exit 1
 }
 
 # Launch the emulator
-&> /tmp/emulator.log "$emulator" -avd qrfuzz -camera-back $webcam &
+emulator &> /tmp/emulator.log \
+    -avd qrfuzz \
+    -camera-back $webcam \
+    &
 
 # Download the QR scanner app
 [[ -f $qr_app_package.apk ]] ||
     curl 'https://f-droid.org/repo/com.example.barcodescanner_13.apk' -o $qr_app_package.apk
 
 echo Waiting for the emulator to start... >&2
-"$adb" wait-for-device
-# sleep 45
+adb wait-for-device
+# The emulator could be still booting. Wait until it is actually ready
+until adb shell pm list packages &> /dev/null; do
+    sleep 2
+done
 
 # Install the app
-if "$adb" shell pm list packages | grep -q $qr_app_package; then
-    "$adb" uninstall $qr_app_package
+if adb shell pm list packages | grep -q $qr_app_package; then
+    until adb uninstall $qr_app_package &> /dev/null; do
+        sleep 2
+    done
 fi
-"$adb" install $qr_app_package.apk
+until adb install $qr_app_package.apk &> /dev/null; do
+    sleep 2
+done
 # Automatically grant permission
-"$adb" shell pm grant $qr_app_package android.permission.CAMERA
+adb shell pm grant $qr_app_package android.permission.CAMERA
 # Launch the app
-"$adb" shell am start -n $qr_app_package/$qr_app_package.feature.tabs.BottomTabsActivity
+adb shell am start -n $qr_app_package/$qr_app_package.feature.tabs.BottomTabsActivity
 
 # Keep logcat running
-"$adb" logcat
+adb logcat
