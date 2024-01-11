@@ -6,6 +6,8 @@
 set -e
 
 pid_file=/tmp/stream.pid
+image_margin_left=50
+image_margin_top=210
 
 if [[ -n "$1" ]]; then
     src="$1"
@@ -50,6 +52,7 @@ case "$1" in
             -f v4l2 \
             -vcodec rawvideo \
             -pix_fmt yuv420p \
+            -vf scale=300:300,pad=1280:720:$image_margin_left:$image_margin_top:white \
             $device \
             &
         ;;

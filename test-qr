@@ -2,6 +2,9 @@
 set -e
 cd "$(dirname "$BASH_SOURCE")"
 
+qr=qr.png
+qr_app_package=com.example.barcodescanner
+
 [[ -n "$ANDROID_HOME" ]] ||
     export ANDROID_HOME="$HOME/Android/Sdk"
 which emulator adb &> /dev/null ||
@@ -15,11 +18,8 @@ which emulator adb &> /dev/null || {
     exit 1
 }
 
-qr=qr.mp4
-qr_app_package=com.example.barcodescanner
-
 # Repeatedly try to execute a command
-# usage: try COMMAND
+# usage: try COMMAND [WITH PARAMS]
 try () {
     [[ -n "$1" ]] || {
         echo try function: bad usage >&2
@@ -29,8 +29,7 @@ try () {
     tries=1
     until "$@" &> /dev/null; do
         let tries++
-        echo tries: $tries >&2
-        echo -n $(tput cuu1) >&2
+        echo tries: $tries $(tput cuu1) >&2
         sleep 1
     done
 }
