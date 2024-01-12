@@ -42,7 +42,7 @@ try () {
 # Automatically kill ffmpeg and the emulator on exit
 trap 'kill $ffmpeg_pid $emulator_pid &> /dev/null' EXIT INT TERM
 
-device=$(./stream "$qr")
+device=$(bin/stream "$qr")
 ffmpeg_pid=$(cat /tmp/stream.pid)
 # Wait for ffmpeg to start the stream
 sleep 1

@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+cd "$(dirname "$BASH_SOURCE")"
+
+export ANDROID_HOME="${ANDROID_HOME:-$HOME/Android/Sdk}"
+
+if [[ ! -d "$ANDROID_HOME" ]]; then
+    echo Installing Android SDK in $ANDROID_HOME
+    setup/install-sdk
+else
+    echo [OK] Android SDK detected in $ANDROID_HOME
+fi
