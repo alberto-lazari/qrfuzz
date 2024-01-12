@@ -40,7 +40,7 @@ trap 'kill $ffmpeg_pid $emulator_pid &> /dev/null' EXIT INT TERM
 device=$(./stream "$qr")
 ffmpeg_pid=$(cat /tmp/stream.pid)
 # Wait for ffmpeg to start the stream
-sleep .1
+sleep 1
 # Get webcam name from emulator
 webcam=$(emulator -webcam-list | grep $device | grep -o 'webcam[0-9]*') || {
     echo Android emulator is unable to find the virtual webcam >&2

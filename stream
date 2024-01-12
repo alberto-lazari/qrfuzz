@@ -21,12 +21,12 @@ fi
 
 # Enable dummy camera
 lsmod | grep -q v4l2loopback || {
-    echo $*: loading v4l2loopback kernel module >&2
+    echo $0: loading v4l2loopback kernel module >&2
     sudo modprobe v4l2loopback
 }
 
 which ffmpeg &> /dev/null || {
-    echo $*: ffmpeg is needed for the stream, but it was not found >&2
+    echo $0: ffmpeg is needed for the stream, but it was not found >&2
     exit 1
 }
 
