@@ -1,23 +1,52 @@
 #!/bin/bash
-# Start a video stream on v4l2loopback virtual camera
-# Use either an image (png/jpg) or a video (mp4) source
-# Returns the device `/dev/videoN` on which ffmpeg is streaming
-# Returns the stream PID in `/tmp/stream.pid`
 set -e
 
 pid_file=/tmp/stream.pid
 image_margin_left=50
 image_margin_top=210
 
+print_usage () {
+    cat >&2 <<- EOF
+	usage: stream SOURCE
+	Start a video stream on v4l2loopback virtual camera
+	Use either an image (.png/.jpg) or a video (.mp4) source
+	- Returns the device \`/dev/videoN\` on which ffmpeg is streaming
+	- Returns the stream PID in \`/tmp/stream.pid\`
+
+	arguments:
+	  SOURCE        image or video file to stream (PNG|JPEG|MP4)
+	options:
+	  -h, --help    show this message
+	EOF
+}
+
+# Test that a parameter was provided
 if [[ -n "$1" ]]; then
     src="$1"
 else
-    cat >&2 <<- EOF
-	usage: stream SOURCE
-      SOURCE    image or video file to stream (PNG|JPEG|MP4)
-	EOF
+    print_usage
     exit 1
 fi
+
+shopt -s nocasematch
+case "$1" in
+    *.png | *.jpg | *.jpeg)
+        image=true
+        ;;
+    *.mp4)
+        image=false
+        ;;
+    -h | --help)
+        print_usage
+        exit
+        ;;
+    *)
+        echo $0: \`$1\` should be an image or a video >&2
+        print_usage
+        exit 1
+        ;;
+esac
+shopt -u nocasematch
 
 # Enable dummy camera
 lsmod | grep -q v4l2loopback || {
@@ -33,7 +62,7 @@ which ffmpeg &> /dev/null || {
 # Find virtual camera device
 device="/dev/$(ls /sys/devices/virtual/video4linux 2> /dev/null | head -1)"
 grep -q '^/dev/video[0-9]*$' <<< "$device" || {
-    echo $*: virtual webcam not found >&2
+    echo $0: virtual webcam not found >&2
     exit 1
 }
 
@@ -43,29 +72,24 @@ if [[ -f "$pid_file" ]] && ps -p $(cat "$pid_file") &> /dev/null; then
 fi
 
 # Start video stream to virtual webcam
-shopt -s nocasematch
-case "$1" in
-    *.png | *.jpg | *.jpeg)
-        ffmpeg &> /tmp/ffmpeg.log \
-            -loop 1 \
-            -re -i "$src" \
-            -f v4l2 \
-            -vcodec rawvideo \
-            -pix_fmt yuv420p \
-            -vf scale=300:300,pad=1280:720:$image_margin_left:$image_margin_top:white \
-            $device \
-            &
-        ;;
-    *.mp4)
-        ffmpeg &> /tmp/ffmpeg.log \
-            -stream_loop -1 \
-            -re -i "$src" \
-            -f v4l2 \
-            $device \
-            &
-        ;;
-esac
-shopt -u nocasematch
+if $image; then
+    ffmpeg &> /tmp/ffmpeg.log \
+        -loop 1 \
+        -re -i "$src" \
+        -f v4l2 \
+        -vcodec rawvideo \
+        -pix_fmt yuv420p \
+        -vf scale=300:300,pad=1280:720:$image_margin_left:$image_margin_top:white \
+        $device \
+        &
+else
+    ffmpeg &> /tmp/ffmpeg.log \
+        -stream_loop -1 \
+        -re -i "$src" \
+        -f v4l2 \
+        $device \
+        &
+fi
 
 # Save the stream PID
 echo $! > "$pid_file"

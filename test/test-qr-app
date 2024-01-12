@@ -1,30 +1,12 @@
-#/bin/bash
+#!/bin/bash
 set -e
-cd "$(dirname "$BASH_SOURCE")"
+cd "../$(realpath "$(dirname "$BASH_SOURCE")")"
 
-qr=qr.png
+qr=test/qr.png
 qr_app_package=com.example.barcodescanner
 
-[[ -n "$ANDROID_HOME" ]] ||
-    export ANDROID_HOME="$HOME/Android/Sdk"
-which emulator adb &> /dev/null ||
-    export PATH="$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH"
-
-which emulator adb &> /dev/null || {
-    cat >&2 <<- EOF
-	Android SDK not found
-	It is expected to be in \$ANDROID_HOME: ${ANDROID_HOME/$HOME/\~}
-	EOF
-    read -p 'Do you want to install it? (Y/n) ' answer >&2
-    if [[ "$answer" != [Nn] ]]; then
-        setup/android-sdk
-    else
-        exit 1
-    fi
-}
-
 # Repeatedly try to execute a command
-# usage: try COMMAND [WITH PARAMS]
+# usage: try COMMAND [COMMAND PARAMS ...]
 try () {
     [[ -n "$1" ]] || {
         echo try function: bad usage >&2
@@ -42,28 +24,22 @@ try () {
 # Automatically kill ffmpeg and the emulator on exit
 trap 'kill $ffmpeg_pid $emulator_pid &> /dev/null' EXIT INT TERM
 
+# Start video stream
 device=$(bin/stream "$qr")
 ffmpeg_pid=$(cat /tmp/stream.pid)
+
 # Wait for ffmpeg to start the stream
 sleep 1
-# Get webcam name from emulator
-webcam=$(emulator -webcam-list | grep $device | grep -o 'webcam[0-9]*') || {
-    echo Android emulator is unable to find the virtual webcam >&2
-    exit 1
-}
 
-# Launch the emulator
-emulator &> /tmp/emulator.log \
-    -avd qrfuzz \
-    -camera-back $webcam \
-    &
-emulator_pid=$!
+# Start emulator
+bin/launch-emulator
+emulator_pid=$(cat /tmp/emulator.pid)
 
 # Download the QR scanner app
 [[ -f $qr_app_package.apk ]] ||
     curl 'https://f-droid.org/repo/com.example.barcodescanner_13.apk' -o $qr_app_package.apk
 
-echo Waiting for the emulator to start... >&2
+echo Waiting for the emulator to start
 adb wait-for-device
 
 # Install the app
@@ -76,7 +52,7 @@ try adb shell pm grant $qr_app_package android.permission.CAMERA
 # Launch the app
 try adb shell "am start -n $qr_app_package/$qr_app_package.feature.tabs.BottomTabsActivity && \
     dumpsys activity activities | grep mFocusedWindow.*$qr_app_package"
-echo 'done     '
+echo Scanning the QR
 
 # Keep logcat running
 adb logcat &> /tmp/logcat.log
