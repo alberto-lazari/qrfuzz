@@ -1,38 +1,50 @@
 #!/bin/bash
 set -e
+cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 pid_file=/tmp/emulator.pid
 
 print_usage () {
     cat >&2 <<- EOF
-	usage: launch-emulator [EMULATOR ARGS ...]
+	usage: launch-emulator WEBCAM_DEVICE [EMULATOR_ARGS ...]
 	Launch an emulator instance
 	- Returns the emulator PID in \`/tmp/emulator.pid\`
 
+	arguments:
+	  WEBCAM_DEVICE     Path of the \`/dev/videoN\` device to use as webcam
+	  EMULATOR_ARGS     Additional arguments to pass to the emulator
 	options:
-	  -h, --help    show this message
+	  -h, --help        show this message
 	EOF
 }
 
+[[ -n "$1" ]] || {
+    print_usage
+    exit 1
+}
 case "$1" in
     -h | --help)
         print_usage
         exit
         ;;
-    *)  additional_args="$@";;
+    *)  device="$1"
+        shift
+        ;;
 esac
+
+additional_args="$@"
 
 if [[ -f "$pid_file" ]] && ps -p $(cat "$pid_file") &> /dev/null; then
     echo An emulator instance is already running >&2
-    exit 2
+    exit
 fi
 
 [[ -n "$ANDROID_HOME" ]] ||
     export ANDROID_HOME="$HOME/Android/Sdk"
-which emulator adb &> /dev/null ||
-    export PATH="$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH"
+which emulator &> /dev/null ||
+    export PATH="$ANDROID_HOME/emulator:$PATH"
 
-which emulator adb &> /dev/null || {
+which emulator &> /dev/null || {
     cat >&2 <<- EOF
 	Android SDK not found
 	It is expected to be in \$ANDROID_HOME: ${ANDROID_HOME/$HOME/\~}
@@ -53,9 +65,9 @@ webcam=$(emulator -webcam-list 2> /dev/null | grep "$device" | grep -o 'webcam[0
 
 # Launch the emulator
 emulator &> /tmp/emulator.log \
-    -avd qrfuzz \
+    @qrfuzz \
     -camera-back $webcam \
-    "$additional_args" \
+    $additional_args \
     &
 
 # Save the emulator PID

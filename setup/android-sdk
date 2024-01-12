@@ -3,7 +3,7 @@ set -e
 
 if [[ $(uname) = Linux ]]; then
     os=linux
-    prefix=~/Android/Sdk
+    export ANDROID_HOME=~/Android/Sdk
 else
     echo OS not supported >&2
     exit 1
@@ -18,21 +18,21 @@ system_image="system-images;android-34;google_apis_playstore;$arch"
 device=qrfuzz
 
 # Get from curl
-if ! [[ -d "$prefix/cmdline-tools" ]]; then
+if [[ ! -d "$ANDROID_HOME/cmdline-tools" ]]; then
     link="https://dl.google.com/android/repository/commandlinetools-$os-10406996_latest.zip"
     out=/tmp/commandlinetools-$os-10406996_latest.zip
     echo "Downloading Android SDK from $link"
     [[ -f "$out" ]] || curl -Lo "$out" "$link"
 
     echo Extracting downloaded package...
-    [[ -d "$prefix/cmdline-tools" ]] || mkdir -p "$prefix/cmdline-tools"
-    unzip -q "$out" -d "$prefix/cmdline-tools" && rm "$out"
+    [[ -d "$ANDROID_HOME/cmdline-tools" ]] || mkdir -p "$ANDROID_HOME/cmdline-tools"
+    unzip -q "$out" -d "$ANDROID_HOME/cmdline-tools" && rm "$out"
 
-    mv "$prefix/cmdline-tools/cmdline-tools" "$prefix/cmdline-tools/latest"
+    mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
 fi
 
 which sdkmanager &> /dev/null ||
-    export PATH="$prefix/cmdline-tools/latest/bin:$PATH"
+    export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
 
 # Accept licenses
 yes | sdkmanager \

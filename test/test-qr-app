@@ -1,9 +1,10 @@
 #!/bin/bash
 set -e
-cd "../$(realpath "$(dirname "$BASH_SOURCE")")"
+cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 qr=test/qr.png
 qr_app_package=com.example.barcodescanner
+qr_app_apk=test/$qr_app_package.apk
 
 # Repeatedly try to execute a command
 # usage: try COMMAND [COMMAND PARAMS ...]
@@ -21,6 +22,24 @@ try () {
     done
 }
 
+[[ -n "$ANDROID_HOME" ]] ||
+    export ANDROID_HOME="$HOME/Android/Sdk"
+which adb &> /dev/null ||
+    export PATH="$ANDROID_HOME/platform-tools:$PATH"
+
+which adb &> /dev/null || {
+    cat >&2 <<- EOF
+	Android SDK not found
+	It is expected to be in \$ANDROID_HOME: ${ANDROID_HOME/$HOME/\~}
+	EOF
+    read -p 'Do you want to install it? (Y/n) ' answer >&2
+    if [[ "$answer" != [Nn] ]]; then
+        setup/android-sdk
+    else
+        exit 1
+    fi
+}
+
 # Automatically kill ffmpeg and the emulator on exit
 trap 'kill $ffmpeg_pid $emulator_pid &> /dev/null' EXIT INT TERM
 
@@ -32,12 +51,12 @@ ffmpeg_pid=$(cat /tmp/stream.pid)
 sleep 1
 
 # Start emulator
-bin/launch-emulator
+bin/launch-emulator $device
 emulator_pid=$(cat /tmp/emulator.pid)
 
 # Download the QR scanner app
-[[ -f $qr_app_package.apk ]] ||
-    curl 'https://f-droid.org/repo/com.example.barcodescanner_13.apk' -o $qr_app_package.apk
+[[ -f "$qr_app_apk" ]] ||
+    curl 'https://f-droid.org/repo/com.example.barcodescanner_13.apk' -o "$qr_app_apk"
 
 echo Waiting for the emulator to start
 adb wait-for-device
@@ -46,7 +65,7 @@ adb wait-for-device
 if try adb shell pm list packages | grep -q $qr_app_package; then
     try adb uninstall $qr_app_package
 fi
-try adb install $qr_app_package.apk
+try adb install "$qr_app_apk"
 # Automatically grant permission
 try adb shell pm grant $qr_app_package android.permission.CAMERA
 # Launch the app
