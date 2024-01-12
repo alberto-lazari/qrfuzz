@@ -15,7 +15,12 @@ which emulator adb &> /dev/null || {
 	Android SDK not found
 	It is expected to be in \$ANDROID_HOME: ${ANDROID_HOME/$HOME/\~}
 	EOF
-    exit 1
+    read -p 'Do you want to install it? (Y/n) ' answer >&2
+    if [[ "$answer" != [Nn] ]]; then
+        setup/android-sdk
+    else
+        exit 1
+    fi
 }
 
 # Repeatedly try to execute a command

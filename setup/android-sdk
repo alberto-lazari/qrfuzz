@@ -1,10 +1,7 @@
 #!/bin/bash
 set -e
 
-if [[ $(uname) = Darwin ]]; then
-    os=mac
-    prefix=~/Library/Android/sdk
-elif [[ $(uname) = Linux ]]; then
+if [[ $(uname) = Linux ]]; then
     os=linux
     prefix=~/Android/Sdk
 else
@@ -20,28 +17,34 @@ fi
 system_image="system-images;android-34;google_apis_playstore;$arch"
 device=qrfuzz
 
-[[ -d "$prefix" ]] || mkdir -p "$prefix/cmdline-tools"
-
 # Get from curl
-if ! [[ -d "$prefix/cmdline-tools/latest" ]]; then
+if ! [[ -d "$prefix/cmdline-tools" ]]; then
     link="https://dl.google.com/android/repository/commandlinetools-$os-10406996_latest.zip"
+    out=/tmp/commandlinetools-$os-10406996_latest.zip
     echo "Downloading Android SDK from $link"
-    curl -Lo out.zip "$link"
+    [[ -f "$out" ]] || curl -Lo "$out" "$link"
+
     echo Extracting downloaded package...
-    unzip -q out.zip -d "$prefix/cmdline-tools" && rm out.zip
+    [[ -d "$prefix/cmdline-tools" ]] || mkdir -p "$prefix/cmdline-tools"
+    unzip -q "$out" -d "$prefix/cmdline-tools" && rm "$out"
+
     mv "$prefix/cmdline-tools/cmdline-tools" "$prefix/cmdline-tools/latest"
 fi
 
-echo yes | "$prefix/cmdline-tools/latest/bin/sdkmanager" \
+which sdkmanager &> /dev/null ||
+    export PATH="$prefix/cmdline-tools/latest/bin:$PATH"
+
+# Accept licenses
+yes | sdkmanager \
     platform-tools \
     'platforms;android-34' \
     $system_image
 
-echo Creating virtual device...
-echo no | "$prefix/cmdline-tools/latest/bin/avdmanager" create avd > /dev/null \
+echo Creating virtual device \`$device\`
+echo no | avdmanager create avd > /dev/null \
     --force \
     -n $device \
     -k $system_image
 
 # Enable buttons
-sed -i'' -e 's/^hw\.keyboard=no/hw.keyboard=yes/' ~/.android/avd/$device.avd/config.ini
+sed -i'' 's/^hw\.keyboard=no/hw.keyboard=yes/' ~/.android/avd/$device.avd/config.ini
