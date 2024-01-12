@@ -21,7 +21,7 @@ fi
 
 # Enable dummy camera
 lsmod | grep -q v4l2loopback || {
-    echo $*: loading v4l2loopback kernel module
+    echo $*: loading v4l2loopback kernel module >&2
     sudo modprobe v4l2loopback
 }
 
