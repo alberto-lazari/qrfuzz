@@ -56,7 +56,8 @@ emulator_pid=$(cat /tmp/emulator.pid)
 
 # Download the QR scanner app
 [[ -f "$qr_app_apk" ]] ||
-    curl 'https://f-droid.org/repo/com.example.barcodescanner_13.apk' -o "$qr_app_apk"
+    curl -Lo "$qr_app_apk" \
+    'https://github.com/albertolazari/qr-barcode-scanner/releases/download/v1.0/com.example.barcodescanner.apk'
 
 echo Waiting for the emulator to start
 adb wait-for-device
@@ -73,5 +74,8 @@ try adb shell "am start -n $qr_app_package/$qr_app_package.feature.tabs.BottomTa
     dumpsys activity activities | grep mFocusedWindow.*$qr_app_package"
 echo Scanning the QR
 
-# Keep logcat running
-adb logcat &> /tmp/logcat.log
+adb logcat -c
+# Get the scanned value
+qr_value=$(grep -m 1 QRSCAN < <(adb logcat -s QRSCAN) |
+    sed 's/^.*QRSCAN *: *\(.*\)$/\1/')
+echo Scanned value: $qr_value
