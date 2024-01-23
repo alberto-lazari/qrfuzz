@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 pid_file=/tmp/stream.pid
 image_margin_left=50
@@ -51,7 +52,9 @@ shopt -u nocasematch
 # Enable dummy camera
 lsmod | grep -q v4l2loopback || {
     echo $0: loading v4l2loopback kernel module >&2
-    sudo modprobe v4l2loopback
+    sudo modprobe v4l2loopback &> /dev/null || {
+        setup/v4l2loopback
+    }
 }
 
 which ffmpeg &> /dev/null || {

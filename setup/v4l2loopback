@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+dir=/tmp/v4l2loopback
+
+# Clone repo
+git clone https://github.com/umlaeute/v4l2loopback "$dir"
+
+# Install
+cd "$dir"
+make
+sudo make install
+sudo depmod -a
+
+# Load module
+sudo modprobe v4l2loopback
+
+rm -rf "$dir"
