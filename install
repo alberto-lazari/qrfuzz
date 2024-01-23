@@ -6,7 +6,21 @@ export ANDROID_HOME="${ANDROID_HOME:-$HOME/Android/Sdk}"
 
 if [[ ! -d "$ANDROID_HOME" ]]; then
     echo Installing Android SDK in $ANDROID_HOME
-    setup/install-sdk
+    setup/android-sdk
 else
     echo [OK] Android SDK detected in $ANDROID_HOME
+fi
+
+if ! lsmod | grep -q v4l2loopback; then
+    echo 'Installing `v4l2loopback` kernel module'
+    setup/v4l2loopback
+else
+    echo '[OK] `v4l2loopback` kernel module already loaded'
+fi
+
+if ! which ffmpeg &> /dev/null; then
+    echo Installing FFMPEG
+    setup/ffmpeg
+else
+    echo [OK] ffmpeg already installed
 fi

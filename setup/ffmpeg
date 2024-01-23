@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e
+
+OS="$(hostnamectl |
+    grep 'Operating System:' |
+    sed 's/ *Operating System: *//'
+)"
+case "$(uname)" in
+    Ubuntu* | Debian*)
+        sudo apt install ffmpeg -y ;;
+    Arch Linux*)
+        sudo pacman -S ffmpeg ;;
+    Fedora*)
+        sudo dnf install ffmpeg ;;
+esac
