@@ -19,7 +19,7 @@ else
 fi
 
 if ! which ffmpeg &> /dev/null; then
-    echo Installing FFMPEG
+    echo Installing FFmpeg
     setup/ffmpeg
 else
     echo [OK] ffmpeg already installed
