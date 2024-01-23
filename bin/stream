@@ -51,10 +51,7 @@ shopt -u nocasematch
 
 # Enable dummy camera
 lsmod | grep -q v4l2loopback || {
-    echo $0: loading v4l2loopback kernel module >&2
-    sudo modprobe v4l2loopback &> /dev/null || {
-        setup/v4l2loopback
-    }
+    setup/v4l2loopback
 }
 
 which ffmpeg &> /dev/null || {

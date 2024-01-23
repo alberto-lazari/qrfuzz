@@ -1,18 +1,24 @@
 #!/bin/bash
 set -e
 
-dir=/tmp/v4l2loopback
+# Just load it if already installed
+! sudo modprobe v4l2loopback 2> /dev/null || exit 0
 
-# Clone repo
-git clone https://github.com/umlaeute/v4l2loopback "$dir"
+dir=/tmp/v4l2loopback-repo
+[[ ! -d "$dir" ]] || rm -rf "$dir"
+
+echo $0: cloning repo >&2
+git clone -q https://github.com/umlaeute/v4l2loopback "$dir"
 
 # Install
+echo $0: installing >&2
 cd "$dir"
-make
-sudo make install
+make > /dev/null
+sudo make install &> /dev/null
 sudo depmod -a
 
 # Load module
+echo $0: loading kernel module \`v4l2loopback\` >&2
 sudo modprobe v4l2loopback
 
 rm -rf "$dir"
