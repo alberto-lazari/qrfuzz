@@ -35,10 +35,11 @@ which sdkmanager &> /dev/null ||
     export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
 
 # Accept licenses
-yes | sdkmanager \
-    platform-tools \
+yes | sdkmanager --install \
+    'platform-tools' \
     'platforms;android-34' \
-    $system_image
+    'build-tools;34.0.0' \
+    "$system_image"
 
 echo Creating virtual device \`$device\`
 echo no | avdmanager create avd > /dev/null \
