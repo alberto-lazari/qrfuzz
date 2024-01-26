@@ -1,33 +1,46 @@
 #!/bin/bash
 set -e
 
-if [[ $(uname) = Linux ]]; then
-    os=linux
-    export ANDROID_HOME=~/Android/Sdk
-else
-    echo OS not supported >&2
-    exit 1
-fi
-
-if uname -m | grep -Eq '^(arm|aarch)64$'; then
-    arch=arm64-v8a
-else
-    arch=x86_64
-fi
-system_image="system-images;android-34;google_apis_playstore;$arch"
+# Name of the emulated Android device
 device=qrfuzz
+
+case "$(uname -m)" in
+    aarch64 | arm64)
+        arch=arm64-v8a ;;
+    x86_64)
+        arch=x86_64 ;;
+    *)  echo CPU architecture not supported >&2
+        exit 1
+        ;;
+esac
+
+system_image="system-images;android-34;google_apis_playstore;$arch"
+
+case "$(uname)" in
+    Linux)
+        os=linux
+        [[ -n "$ANDROID_HOME" ]] || export ANDROID_HOME=~/Android/Sdk
+        ;;
+    *)  echo OS not supported >&2
+        exit 1
+        ;;
+esac
 
 # Get from curl
 if [[ ! -d "$ANDROID_HOME/cmdline-tools" ]]; then
     link="https://dl.google.com/android/repository/commandlinetools-$os-10406996_latest.zip"
     out=/tmp/commandlinetools-$os-10406996_latest.zip
+
     echo "Downloading Android SDK from $link"
-    [[ -f "$out" ]] || curl -Lo "$out" "$link"
+    [[ -f "$out" ]] ||
+        curl -Lo "$out" "$link"
+
+    [[ -d "$ANDROID_HOME/cmdline-tools" ]] ||
+        mkdir -p "$ANDROID_HOME/cmdline-tools"
 
     echo Extracting downloaded package...
-    [[ -d "$ANDROID_HOME/cmdline-tools" ]] || mkdir -p "$ANDROID_HOME/cmdline-tools"
-    unzip -q "$out" -d "$ANDROID_HOME/cmdline-tools" && rm "$out"
-
+    unzip -q "$out" -d "$ANDROID_HOME/cmdline-tools" &&
+        rm "$out"
     mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
 fi
 
@@ -47,5 +60,5 @@ echo no | avdmanager create avd > /dev/null \
     -n $device \
     -k $system_image
 
-# Enable buttons
+# Enable emulator buttons
 sed -i'' 's/^hw\.keyboard=no/hw.keyboard=yes/' ~/.android/avd/$device.avd/config.ini
