@@ -10,4 +10,7 @@ elif which pacman &> /dev/null; then
 # RHEL-based
 elif which dnf &> /dev/null; then
     sudo dnf install --assumeyes ffmpeg ;;
+else
+    echo $0: no supported package manager was found >&2
+    exit 1
 fi

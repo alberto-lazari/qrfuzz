@@ -56,7 +56,12 @@ lsmod | grep -q v4l2loopback || {
 
 which ffmpeg &> /dev/null || {
     echo $0: ffmpeg is needed for the stream, but it was not found >&2
-    exit 1
+    read -p 'Do you want to install it? (Y/n) ' answer >&2
+    if [[ "$answer" != [Nn] ]]; then
+        setup/ffmpeg
+    else
+        exit 1
+    fi
 }
 
 # Find virtual camera device

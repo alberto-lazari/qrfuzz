@@ -19,7 +19,20 @@ system_image="system-images;android-34;google_apis_playstore;$arch"
 case "$(uname)" in
     Linux)
         os=linux
-        [[ -n "$ANDROID_HOME" ]] || export ANDROID_HOME=~/Android/Sdk
+        [[ -n "$ANDROID_HOME" ]] || {
+            export ANDROID_HOME=~/Android/Sdk
+            echo Environment variable ANDROID_HOME is not set >&2
+            read -p 'Do you want to add it to your ~/.bash_profile? (Y/n) ' answer >&2 
+            if [[ "$answer" != [Nn] ]]; then
+                echo 'export ANDROID_HOME="$HOME/Android/Sdk"' >> ~/.bash_profile
+            else
+                cat >&2 <<-EOF
+				You will need to manually set it, by writing the following line in your ~/.bash_profile
+				export ANDROID_HOME="\$HOME/Android/Sdk"
+
+				EOF
+            fi
+        }
         ;;
     *)  echo OS not supported >&2
         exit 1
