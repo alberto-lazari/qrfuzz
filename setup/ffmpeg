@@ -3,7 +3,7 @@ set -e
 
 # Debian-based
 if which apt &> /dev/null; then
-    sudo apt install ffmpeg -y ;;
+    sudo apt install -y ffmpeg ;;
 # Arch-based
 elif which pacman &> /dev/null; then
     sudo pacman -S ffmpeg --noconfirm ;;
