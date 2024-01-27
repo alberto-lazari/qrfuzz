@@ -4,22 +4,6 @@ cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 initial_qr=test/qr.png
 
-# Repeatedly try to execute a command
-# usage: try COMMAND [COMMAND PARAMS ...]
-try () {
-    [[ -n "$1" ]] || {
-        echo try function: bad usage >&2
-        return 1
-    }
-    echo trying \`$*\` >&2
-    tries=1
-    until "$@" &> /dev/null; do
-        let tries++
-        echo tries: $tries $(tput cuu1) >&2
-        sleep 1
-    done
-}
-
 [[ -n "$ANDROID_HOME" ]] ||
     export ANDROID_HOME="$HOME/Android/Sdk"
 which adb &> /dev/null ||
@@ -56,4 +40,4 @@ emulator_pid=$(< /tmp/emulator.pid)
 echo Waiting for the emulator to start
 adb wait-for-device
 
-echo Now you should run the coordinator
+# Now you should run the coordinator
