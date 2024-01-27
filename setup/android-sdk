@@ -60,6 +60,17 @@ fi
 which sdkmanager &> /dev/null ||
     export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
 
+# Check that the installed java version is sufficiently high
+! sdkmanager --version 2>&1 | grep -q 'java\.lang\.UnsupportedClassVersionError' || {
+    cat >&2 <<- EOF
+	You need to install a more recent version of your Java Runtime
+
+	This is your current Java version (\`java --version\` command output):
+	$(java --version)
+	EOF
+    exit 1
+}
+
 # Accept licenses
 yes | sdkmanager --install \
     'platform-tools' \
