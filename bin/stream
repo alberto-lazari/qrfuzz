@@ -3,6 +3,7 @@ set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 pid_file=/tmp/stream.pid
+device_file=/tmp/stream.device
 image_margin_left=50
 image_margin_top=210
 
@@ -11,8 +12,8 @@ print_usage () {
 	usage: stream SOURCE
 	Start a video stream on v4l2loopback virtual camera
 	Use either an image (.png/.jpg) or a video (.mp4) source
-	- Returns the device \`/dev/videoN\` on which ffmpeg is streaming
-	- Returns the stream PID in \`/tmp/stream.pid\`
+	- Returns the device \`/dev/videoN\` on which ffmpeg is streaming in \`$device_file\`
+	- Returns the stream PID in \`$pid_file\`
 
 	arguments:
 	  SOURCE        image or video file to stream (PNG|JPEG|MP4)
@@ -64,12 +65,17 @@ which ffmpeg &> /dev/null || {
     fi
 }
 
-# Find virtual camera device
-device="/dev/$(ls /sys/devices/virtual/video4linux 2> /dev/null | head -1)"
+# Find virtual camera device from a previously saved one
+device="$(cat "$device_file" 2> /dev/null)" ||
+    # Otherwise find a device provided by v4l
+    device="/dev/$(ls /sys/devices/virtual/video4linux 2> /dev/null | head -1)"
+# If the device format is not `/dev/videoN` something was wrong
 grep -q '^/dev/video[0-9]*$' <<< "$device" || {
     echo $0: virtual webcam not found >&2
     exit 1
 }
+# Return the virtual webcam device
+echo $device > "$device_file"
 
 # Close the currently running stream, if any
 if [[ -f "$pid_file" ]] && ps -p $(cat "$pid_file") &> /dev/null; then
@@ -98,6 +104,3 @@ fi
 
 # Save the stream PID
 echo $! > "$pid_file"
-
-# Return the device
-echo $device

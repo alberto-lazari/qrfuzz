@@ -9,7 +9,7 @@ case "$(uname -m)" in
         arch=arm64-v8a ;;
     x86_64)
         arch=x86_64 ;;
-    *)  echo CPU architecture not supported >&2
+    *)  echo $0: CPU architecture not supported >&2
         exit 1
         ;;
 esac
@@ -21,7 +21,7 @@ case "$(uname)" in
         os=linux
         [[ -n "$ANDROID_HOME" ]] || {
             export ANDROID_HOME=~/Android/Sdk
-            echo Environment variable ANDROID_HOME is not set >&2
+            echo $0: environment variable ANDROID_HOME is not set >&2
             read -p 'Do you want to add it to your ~/.bash_profile? (Y/n) ' answer >&2 
             if [[ "$answer" != [Nn] ]]; then
                 echo 'export ANDROID_HOME="$HOME/Android/Sdk"' >> ~/.bash_profile
@@ -34,7 +34,7 @@ case "$(uname)" in
             fi
         }
         ;;
-    *)  echo OS not supported >&2
+    *)  echo $0: OS not supported >&2
         exit 1
         ;;
 esac
@@ -44,14 +44,14 @@ if [[ ! -d "$ANDROID_HOME/cmdline-tools" ]]; then
     link="https://dl.google.com/android/repository/commandlinetools-$os-10406996_latest.zip"
     out=/tmp/commandlinetools-$os-10406996_latest.zip
 
-    echo "Downloading Android SDK from $link"
+    echo $0: downloading Android SDK from $link
     [[ -f "$out" ]] ||
         curl -Lo "$out" "$link"
 
     [[ -d "$ANDROID_HOME/cmdline-tools" ]] ||
         mkdir -p "$ANDROID_HOME/cmdline-tools"
 
-    echo Extracting downloaded package...
+    echo $0: extracting downloaded package
     unzip -q "$out" -d "$ANDROID_HOME/cmdline-tools" &&
         rm "$out"
     mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
@@ -67,7 +67,7 @@ yes | sdkmanager --install \
     'build-tools;34.0.0' \
     "$system_image"
 
-echo Creating virtual device \`$device\`
+echo $0: creating virtual device \`$device\`
 echo no | avdmanager create avd > /dev/null \
     --force \
     -n $device \

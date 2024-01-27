@@ -44,15 +44,16 @@ which adb &> /dev/null || {
 trap 'kill $ffmpeg_pid $emulator_pid &> /dev/null' EXIT INT TERM
 
 # Start video stream
-device=$(bin/stream "$qr")
-ffmpeg_pid=$(cat /tmp/stream.pid)
+bin/stream "$qr"
+device=$(< /tmp/stream.device)
+ffmpeg_pid=$(< /tmp/stream.pid)
 
 # Wait for ffmpeg to start the stream
 sleep 1
 
 # Start emulator
 bin/launch-emulator $device
-emulator_pid=$(cat /tmp/emulator.pid)
+emulator_pid=$(< /tmp/emulator.pid)
 
 # Download the QR scanner app
 [[ -f "$qr_app_apk" ]] ||
