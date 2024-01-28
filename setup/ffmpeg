@@ -3,13 +3,14 @@ set -e
 
 # Debian-based
 if which apt &> /dev/null; then
-    sudo apt install -y ffmpeg ;;
+    sudo apt update -y
+    sudo apt install -y ffmpeg
 # Arch-based
 elif which pacman &> /dev/null; then
-    sudo pacman -S ffmpeg --noconfirm ;;
+    sudo pacman -S ffmpeg --noconfirm
 # RHEL-based
 elif which dnf &> /dev/null; then
-    sudo dnf install --assumeyes ffmpeg ;;
+    sudo dnf install --assumeyes ffmpeg
 else
     echo $0: no supported package manager was found >&2
     exit 1
