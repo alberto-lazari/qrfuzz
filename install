@@ -5,12 +5,8 @@ cd "$(dirname "$BASH_SOURCE")"
 [[ -n "$ANDROID_HOME" ]] ||
     export ANDROID_HOME="$HOME/Android/Sdk"
 
-if [[ ! -d "$ANDROID_HOME" ]]; then
-    echo Installing Android SDK in $ANDROID_HOME
-    setup/android-sdk
-else
-    echo [OK] Android SDK detected in $ANDROID_HOME
-fi
+echo Installing Android SDK in $ANDROID_HOME
+setup/android-sdk
 
 if ! lsmod | grep -q v4l2loopback; then
     echo 'Installing `v4l2loopback` kernel module'
@@ -25,3 +21,5 @@ if ! which ffmpeg &> /dev/null; then
 else
     echo [OK] ffmpeg already installed
 fi
+
+setup/appium

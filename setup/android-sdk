@@ -62,7 +62,7 @@ which sdkmanager &> /dev/null ||
 
 # Check that Java Runtime is installed and is the correct version (>= 17)
 sdkmanager --version &> /dev/null || {
-    echo $0: installing Java Runtime
+    echo $0: installing dependency: Java Runtime
 
     # Debian-based
     if which apt &> /dev/null; then
@@ -87,11 +87,14 @@ yes | sdkmanager --install \
     'build-tools;34.0.0' \
     "$system_image"
 
-echo $0: creating virtual device \`$device\`
-echo no | avdmanager create avd > /dev/null \
-    --force \
-    -n $device \
-    -k $system_image
+# Create virtual device, if not present
+avdmanager list avd | grep -q "$device" || {
+    echo $0: creating virtual device \`$device\`
+    echo no | avdmanager create avd > /dev/null \
+        --force \
+        -n "$device" \
+        -k $system_image
 
-# Enable emulator buttons
-sed -i'' 's/^hw\.keyboard=no/hw.keyboard=yes/' ~/.android/avd/$device.avd/config.ini
+    # Enable emulator buttons
+    sed -i'' 's/^hw\.keyboard=no/hw.keyboard=yes/' ~/.android/avd/$device.avd/config.ini
+}
