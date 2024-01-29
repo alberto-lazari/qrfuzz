@@ -2,28 +2,16 @@
 set -e
 
 which npm &> /dev/null || {
-    echo $0: installing dependency: npm
-
-    # Debian-based
-    if which apt &> /dev/null; then
-        sudo apt update -y
-        sudo apt install -y npm
-    # Arch-based
-    elif which pacman &> /dev/null; then
-        sudo pacman -S npm --noconfirm
-    # RHEL-based
-    elif which dnf &> /dev/null; then
-        sudo dnf install --assumeyes npm
-    else
-        echo $0: no supported package manager was found >&2
-        exit 1
-    fi
+    echo $0: installing dependency: Node.js
+    setup/nodejs
 }
 
 which appium &> /dev/null || {
-    echo $0: installing Appium
+    echo $0: installing Appium from npm
     sudo npm install -g appium
 }
 
-appium driver list --installed 2>&1 | grep -q uiautomator2 ||
+appium driver list --installed 2>&1 | grep -q uiautomator2 || {
+    echo $0: installing \`uiautomator2\` driver
     appium driver install uiautomator2
+}

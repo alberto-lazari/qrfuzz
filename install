@@ -22,4 +22,17 @@ else
     echo [OK] ffmpeg already installed
 fi
 
-setup/appium
+if ! which npm &> /dev/null; then
+    echo Installing Node.js
+    setup/nodejs
+else
+    echo [OK] Node.js already installed
+fi
+
+# The setup will be triggered when either the driver or appium itself are missing
+if ! appium driver list --installed 2>&1 | grep -q uiautomator2; then
+    echo Installing Appium
+    setup/appium
+else
+    echo [OK] Appium already installed
+fi
