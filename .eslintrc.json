@@ -1,15 +1,20 @@
 {
   "env": {
-    "commonjs": true,
-    "es2021": true,
     "node": true
   },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended-type-checked",
+    "plugin:@typescript-eslint/stylistic-type-checked",
+    "prettier"
+  ],
+  "plugins": ["@typescript-eslint"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": "latest"
+    "ecmaVersion": "latest",
+    "project": "./tsconfig.json",
+    "tsconfigRootDir": "."
   },
-  "plugins": ["@typescript-eslint", "@typescript-eslint/recommended"],
-  "extends": ["prettier"],
-  "rules": {},
+  "ignorePatterns": ["QRFuzz/**/*", "test/qr-barcode-scanner/**/*"],
   "root": true
 }

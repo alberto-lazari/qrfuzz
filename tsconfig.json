@@ -1,11 +1,12 @@
 {
   "extends": "@tsconfig/node-lts/tsconfig.json",
+  "include": ["src/**/*"],
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
 
     "rootDir": "./src",
-    "outDir": "dist/",
+    "noEmit": true,
 
     "newLine": "lf",
 
