@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 pid_file=/tmp/stream.pid
 device_file=/tmp/stream.device
@@ -23,12 +22,10 @@ print_usage () {
 }
 
 # Test that a parameter was provided
-if [[ -n "$1" ]]; then
-    src="$1"
-else
+[[ -n "$1" ]] || {
     print_usage
     exit 1
-fi
+}
 
 shopt -s nocasematch
 case "$1" in
@@ -40,7 +37,7 @@ case "$1" in
         ;;
     -h | --help)
         print_usage
-        exit
+        exit 0
         ;;
     *)
         echo $0: \`$1\` should be an image or a video >&2
@@ -49,6 +46,14 @@ case "$1" in
         ;;
 esac
 shopt -u nocasematch
+
+# Get full source file path and check that it exists
+src="$(realpath "$1" 2> /dev/null)" && [[ -f "$src" ]] || {
+    echo $0: \`$1\` file not found >&2
+    exit 1
+}
+
+cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 # Enable dummy camera
 lsmod | grep -q v4l2loopback || {
