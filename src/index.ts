@@ -3,7 +3,7 @@ import argParse from "./args";
 
 const list_dicts = () =>
   QRCodeGenerator.list_dicts().then((list): void => {
-    list.sort().forEach((name) => console.log(name));
+    list.sort().forEach(({ name }) => console.log(name));
   });
 
 const main = async () => {
