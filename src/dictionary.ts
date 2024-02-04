@@ -1,5 +1,5 @@
 import { opendir, readFile } from "fs/promises";
-import path, { resolve } from "path";
+import path from "path";
 
 const DICTS_DIR = path.resolve(__dirname, "dicts/");
 
@@ -37,7 +37,7 @@ export type DictsIterStatus = {
 export type DictsIterator = () => [Uint8Array | null, DictsIterStatus];
 
 const read_lines = async (file: string): Promise<Uint8Array[]> => {
-  const buffer = await readFile(resolve(DICTS_DIR, file));
+  const buffer = await readFile(path.resolve(DICTS_DIR, file));
   // split buffer on LF and CR
   const [payloads] = buffer.reduce<[Uint8Array[], number]>(
     ([payloads, line_start], b, idx, buf) => {
