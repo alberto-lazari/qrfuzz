@@ -16,5 +16,8 @@
     "tsconfigRootDir": "."
   },
   "ignorePatterns": ["QRFuzz/**/*", "test/qr-barcode-scanner/**/*"],
+  "rules": {
+    "@typescript-eslint/consistent-type-definitions": ["error", "type"]
+  },
   "root": true
 }

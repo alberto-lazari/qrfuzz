@@ -23,6 +23,6 @@ export default (): ArgsType => {
   }
 };
 
-export interface ArgsType {
+export type ArgsType = {
   command: "list-dicts";
-}
+};
