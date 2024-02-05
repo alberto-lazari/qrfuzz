@@ -55,7 +55,7 @@ const read_lines = async (file: string): Promise<Uint8Array[]> => {
   return payloads;
 };
 
-const dicts_iterator = async (
+export const dicts_iterator = async (
   files: string[],
   dict_start = 0,
   line_start = 0,

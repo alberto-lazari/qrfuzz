@@ -1,8 +1,6 @@
 import QRCode, { QRCodeSegment } from "qrcode";
 
-export const write = async (payload: string, output: string) => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(payload);
+export const write = async (data: Buffer, output: string) => {
   const segs: QRCodeSegment[] = [{ data, mode: "byte" }];
   return QRCode.toFile(output, segs, {
     errorCorrectionLevel: "L",
