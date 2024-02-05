@@ -8,7 +8,9 @@ which npm &> /dev/null || {
 
 which appium &> /dev/null || {
     echo $0: installing Appium from npm
-    sudo npm install -g appium
+    npm install -g appium ||
+        # Might need root access
+        sudo !!
 }
 
 appium driver list --installed 2>&1 | grep -q uiautomator2 || {
