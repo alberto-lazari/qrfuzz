@@ -29,13 +29,13 @@ Additionally, mind that having a `~/.profile` could prevent `~/.bash_profile` to
 
 If you want to perform a full reboot of the emulator you can launch it with
 
-```
+```bash
 bin/launch-emulator <video-device> -no-snapshot-load
 ```
 
 If you want to wipe out every trace of the emulator you can reinstall it with
 
-```
+```bash
 rm -rf ~/.android/avd/qrfuzz*
 setup/android-sdk
 ```
