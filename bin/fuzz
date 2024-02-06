@@ -64,9 +64,11 @@ sleep 2
 
 log Starting Android emulator
 bin/launch-emulator $device
-emulator_pid=$(< /tmp/emulator.pid)
 
 adb wait-for-device
+until adb shell pm list packages &> /dev/null; do
+    sleep 1
+done
 
 log Starting Appium server
 appium &> /tmp/appium.log \
@@ -76,7 +78,7 @@ appium &> /tmp/appium.log \
 appium_pid=$!
 
 # Wait for appium to start
-sleep 4
+sleep 5
 
 emulator="$( \
     adb devices |

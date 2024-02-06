@@ -4,7 +4,7 @@ cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 qr=test/qr.png
 qr_app_package=com.example.barcodescanner
-qr_app_apk=test/$qr_app_package.apk
+qr_app_apk=test/apks/$qr_app_package.apk
 
 # Repeatedly try to execute a command
 # usage: try COMMAND [COMMAND PARAMS ...]
