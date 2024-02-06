@@ -44,6 +44,7 @@ esac
     mkdir -p "$apk_directory"
 
 for app in $apps; do
+    download=true
     app_name=$(sed 's/.*/\u&/' <<< $app)
     file="$apk_directory/$app.apk"
 
@@ -51,14 +52,26 @@ for app in $apps; do
         discord)
             link='https://dw29.uptodown.com/dwn/4v1DOXXxUtLz5E0FU9H39urRNzcdTplHuhm-C8NGsH4Xmg_imYVkY9SQdUPTLs9avOGP35RQWPTU-1vU8h8TKRSjeN-XHNX1apL0V6muTZ2zR55C5sz_Cee4ga9lRRHn/Cd9W8C_boVFnOF_VGIF2RgCS4JPqJrcCjALkN0Gy1dv71Dadvu1D-EMfV8DMZ8fx0xdoH4xlO0E_uugolv8dNtMNbEoE_lT3tA5phItm_JiU6szGb9x0e2S7EL7U73Ek/n8grr4pyo_-x1zTyLtGDqji6HiLQj00vgA4qorapm91Jer9fVbpp77WK_5V5yaxtDP8JJ-3fcdXb6NmXPfqyxp6wlQI7mpaMJ3KOkjZCcro=/discord-126-17-stable.apk'
             ;;
+        postepay)
+            link='https://downloadr2.apkmirror.com/wp-content/uploads/2024/02/10/65bcad2745464/posteitaliane.posteapp.apppostepay_11.398.104-110398104_minAPI21(arm64-v8a,armeabi,armeabi-v7a,mips,mips64,x86,x86_64)(nodpi)_apkmirror.com.apk?verify=1707256050-1o6Fp2kM1MixNddpapqLro0ccJRXx_cJV8DAfE-PeqQ'
+            ;;
         *)  warning \`$app_name\` is not configured yet
             # Skip installation
             continue
             ;;
     esac
 
-    log Downloading $app_name
-    # curl -L "$link" -o "$file"
+    # Check if file is already downloaded
+    [[ ! -f "$file" ]] || {
+        log $app_name already downloaded in $file
+        read -p 'Download it again? (y/N) ' answer
+        [[ "$answer" = [Yy] ]] || download=false
+    }
+
+    ! $download || {
+        log Downloading $app_name
+        curl -L "$link" -o "$file"
+    }
 
     log Installing $app_name
     adb install "$file"
