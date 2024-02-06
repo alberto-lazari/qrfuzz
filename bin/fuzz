@@ -70,6 +70,9 @@ until adb shell pm list packages &> /dev/null; do
     sleep 1
 done
 
+# Check that the app is installed
+setup/apk $app
+
 log Starting Appium server
 appium &> /tmp/appium.log \
     --base-path /wd/hub \
