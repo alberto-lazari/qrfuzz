@@ -4,6 +4,26 @@ cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 initial_qr=test/qr.png
 
+# usage: run_test_for APP
+run_test_for () {
+    app="$1"
+    [[ -n "$app" ]] || {
+        echo $0: \`run_test_for\` function: bad usage >&2
+        return 1
+    }
+
+    emulator="$( \
+        adb devices |
+        grep emulator |
+        sed 's/\(emulator-[0-9]*\).*/\1/'
+    )"
+
+    cd QRFuzz/tools/QRCodeFuzzer
+    [[ -d "data-tests/$app" ]] ||
+        mkdir -p "data-tests/$app"
+    node index.js "$app" "data-tests/$app" 4723 "$emulator"
+}
+
 [[ -n "$ANDROID_HOME" ]] ||
     export ANDROID_HOME="$HOME/Android/Sdk"
 which adb &> /dev/null ||
@@ -22,13 +42,13 @@ which adb &> /dev/null || {
     fi
 }
 
-# Automatically kill ffmpeg and the emulator on exit
-trap 'kill $ffmpeg_pid $emulator_pid &> /dev/null' EXIT INT TERM
+# Automatically kill the background services on exit
+trap 'kill $stream_pid $appium_pid &> /dev/null' EXIT INT TERM
 
 # Start video stream
 bin/stream "$initial_qr"
 device=$(< /tmp/stream.device)
-ffmpeg_pid=$(< /tmp/stream.pid)
+stream_pid=$(< /tmp/stream.pid)
 
 # Wait for ffmpeg to start the stream
 sleep 1
@@ -40,4 +60,12 @@ emulator_pid=$(< /tmp/emulator.pid)
 echo Waiting for the emulator to start
 adb wait-for-device
 
-# Now you should run the coordinator
+appium &> /tmp/appium.log \
+    --base-path /wd/hub \
+    -p 4723 \
+    &
+appium_pid=$!
+
+sleep 2
+
+run_test_for postepay
