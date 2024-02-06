@@ -2,7 +2,7 @@
 set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
-initial_qr=test/qr.png
+initial_qr=test/qr-examples/qr1.png
 
 # usage: run_test_for APP
 run_test_for () {
