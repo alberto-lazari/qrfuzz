@@ -66,6 +66,7 @@ appium &> /tmp/appium.log \
     &
 appium_pid=$!
 
+# Wait for appium to start
 sleep 2
 
 run_test_for postepay
