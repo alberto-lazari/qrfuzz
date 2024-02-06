@@ -8,7 +8,7 @@ log () {
 
 print_help () {
     cat >&2 <<- EOF
-	usage: fuzz APP
+	usage: fuzz [-h] APP
 	Run fuzzing tests for APP
 
 	arguments:
@@ -54,21 +54,21 @@ which adb &> /dev/null || {
 # Automatically kill the background services on exit
 trap 'kill $stream_pid $appium_pid &> /dev/null' EXIT INT TERM
 
-# Start video stream
+log Starting video stream to virtual camera
 bin/stream "$initial_qr"
 device=$(< /tmp/stream.device)
 stream_pid=$(< /tmp/stream.pid)
 
 # Wait for ffmpeg to start the stream
-sleep 1
+sleep 2
 
-# Start emulator
+log Starting Android emulator
 bin/launch-emulator $device
 emulator_pid=$(< /tmp/emulator.pid)
 
-log Waiting for the emulator to start
 adb wait-for-device
 
+log Starting Appium server
 appium &> /tmp/appium.log \
     --base-path /wd/hub \
     -p 4723 \
@@ -76,7 +76,7 @@ appium &> /tmp/appium.log \
 appium_pid=$!
 
 # Wait for appium to start
-sleep 2
+sleep 4
 
 emulator="$( \
     adb devices |
@@ -91,4 +91,5 @@ cd QRFuzz/tools/QRCodeFuzzer
 [[ -f "data-test/$app/fuzzer.json" ]] ||
     cat data-tests/app-example/fuzzer.json > "data-tests/$app/fuzzer.json"
 
+log Starting fuzzing tests
 node index.js "$app" "data-tests/$app" 4723 "$emulator"

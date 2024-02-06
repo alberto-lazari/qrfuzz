@@ -1,0 +1,65 @@
+#!/bin/bash
+set -e
+cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
+
+apk_directory=test/apks
+
+log () {
+    echo "[[1;34m$0[0m] $@"
+}
+warning () {
+    log "[[1;33mWARNING[0m] $@" >&2
+}
+error () {
+    log "[[1;31mERROR[0m] $@" >&2
+    exit 1
+}
+
+print_help () {
+    cat >&2 <<-EOF
+	usage: apk [-h] APP [...]
+	Download and install the required APP[s]
+
+	arguments:
+      APP [...]     the app (or multiple apps) to install
+	options:
+	  -h, --help    show this message
+	EOF
+}
+
+[[ -n "$1" ]] || {
+    print_help
+    exit 1
+}
+
+case "$1" in
+    -h | --help)
+        print_help
+        exit 0
+        ;;
+    *)  apps="$@" ;;
+esac
+
+[[ -d "$apk_directory" ]] ||
+    mkdir -p "$apk_directory"
+
+for app in $apps; do
+    app_name=$(sed 's/.*/\u&/' <<< $app)
+    file="$apk_directory/$app.apk"
+
+    case $app in
+        discord)
+            link='https://dw29.uptodown.com/dwn/4v1DOXXxUtLz5E0FU9H39urRNzcdTplHuhm-C8NGsH4Xmg_imYVkY9SQdUPTLs9avOGP35RQWPTU-1vU8h8TKRSjeN-XHNX1apL0V6muTZ2zR55C5sz_Cee4ga9lRRHn/Cd9W8C_boVFnOF_VGIF2RgCS4JPqJrcCjALkN0Gy1dv71Dadvu1D-EMfV8DMZ8fx0xdoH4xlO0E_uugolv8dNtMNbEoE_lT3tA5phItm_JiU6szGb9x0e2S7EL7U73Ek/n8grr4pyo_-x1zTyLtGDqji6HiLQj00vgA4qorapm91Jer9fVbpp77WK_5V5yaxtDP8JJ-3fcdXb6NmXPfqyxp6wlQI7mpaMJ3KOkjZCcro=/discord-126-17-stable.apk'
+            ;;
+        *)  warning \`$app_name\` is not configured yet
+            # Skip installation
+            continue
+            ;;
+    esac
+
+    log Downloading $app_name
+    # curl -L "$link" -o "$file"
+
+    log Installing $app_name
+    adb install "$file"
+done
