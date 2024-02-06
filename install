@@ -10,11 +10,19 @@ ok () {
     echo "[[1;32mOK[0m] $@"
 }
 
+# Set Android SDK variables
 [[ -n "$ANDROID_HOME" ]] ||
     export ANDROID_HOME="$HOME/Android/Sdk"
+which sdkmanager &> /dev/null ||
+    export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
 
-log Installing Android SDK in $ANDROID_HOME
-setup/android-sdk
+# This will fail if there is no sdk installed or the virtual device does not exist
+if ! avdmanager list avd 2> /dev/null | grep -q qrfuzz; then
+    log Installing Android SDK in $ANDROID_HOME
+    setup/android-sdk
+else
+    ok Android SDK already installed
+fi
 
 if ! lsmod | grep -q v4l2loopback; then
     log 'Installing `v4l2loopback` kernel module'
