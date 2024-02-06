@@ -6,7 +6,7 @@ log () {
 }
 
 error () {
-    echo "[[1;31mERROR[0m] $@" >&2
+    log "[[1;31mERROR[0m] $@" >&2
     exit 1
 }
 
@@ -69,7 +69,7 @@ esac
 }
 
 which sdkmanager &> /dev/null ||
-    export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
+    export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
 
 # Check that Java Runtime is installed and is the correct version (>= 17)
 sdkmanager --version &> /dev/null || {
