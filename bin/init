@@ -19,8 +19,12 @@ run_test_for () {
     )"
 
     cd QRFuzz/tools/QRCodeFuzzer
+
     [[ -d "data-tests/$app" ]] ||
         mkdir -p "data-tests/$app"
+    [[ -f "data-test/$app/fuzzer.json" ]] ||
+        cat data-tests/app-example/fuzzer.json > "data-tests/$app/fuzzer.json"
+
     node index.js "$app" "data-tests/$app" 4723 "$emulator"
 }
 
