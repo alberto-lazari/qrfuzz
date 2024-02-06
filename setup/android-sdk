@@ -32,6 +32,12 @@ case "$(uname)" in
 
 				EOF
             fi
+
+            cat >&2 <<- EOF
+			[!!] You might need to type \`source ~/.bash_profile\`
+			or log out and start a new session
+
+			EOF
         }
         ;;
     *)  echo $0: OS not supported >&2
@@ -40,7 +46,7 @@ case "$(uname)" in
 esac
 
 # Get from curl
-if [[ ! -d "$ANDROID_HOME/cmdline-tools" ]]; then
+[[ -d "$ANDROID_HOME/cmdline-tools" ]] || {
     link="https://dl.google.com/android/repository/commandlinetools-$os-10406996_latest.zip"
     out=/tmp/commandlinetools-$os-10406996_latest.zip
 
@@ -55,7 +61,7 @@ if [[ ! -d "$ANDROID_HOME/cmdline-tools" ]]; then
     unzip -q "$out" -d "$ANDROID_HOME/cmdline-tools" &&
         rm "$out"
     mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
-fi
+}
 
 which sdkmanager &> /dev/null ||
     export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
@@ -66,14 +72,14 @@ sdkmanager --version &> /dev/null || {
 
     # Debian-based
     if which apt &> /dev/null; then
-        sudo apt update -y
-        sudo apt install -y openjdk-17-jdk openjdk-17-jre
+        sudo apt update
+        sudo apt install openjdk-17-jdk openjdk-17-jre
     # Arch-based
     elif which pacman &> /dev/null; then
-        sudo pacman -S jdk-openjdk --noconfirm
+        sudo pacman -S jdk-openjdk
     # RHEL-based
     elif which dnf &> /dev/null; then
-        sudo dnf install --assumeyes java-17-openjdk
+        sudo dnf install java-17-openjdk
     else
         echo $0: no supported package manager was found >&2
         exit 1

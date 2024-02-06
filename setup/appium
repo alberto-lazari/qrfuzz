@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# NVM might need its environment
+[[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
+
 which npm &> /dev/null || {
     echo $0: installing dependency: Node.js
     setup/nodejs
