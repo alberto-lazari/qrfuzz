@@ -87,7 +87,7 @@ for app in $apps; do
             ;;
         postepay)
             package=posteitaliane.posteapp.apppostepay
-            link='https://downloadr2.apkmirror.com/wp-content/uploads/2024/02/50/65c1eaf794a33/com.posteitaliane.spim_5.3.503-500003503_minAPI24(arm64-v8a,armeabi-v7a,x86,x86_64)(nodpi)_apkmirror.com.apk?verify=1707260619-6resV-5r1fCW6gMZQn6SVYj3vUUQwWvNOz8F62_RSQI'
+            link='https://downloadr2.apkmirror.com/wp-content/uploads/2024/01/66/65bab663ea76b/posteitaliane.posteapp.apppostepay_11.398.103-110398103_minAPI21(arm64-v8a,armeabi,armeabi-v7a,mips,mips64,x86,x86_64)(nodpi)_apkmirror.com.apk?verify=1707262370-t59rLxoQohUVqrM8IbTG9qkNc1AOeWKN7pPZqVjeLfI'
             ;;
         *)  warning \`$app_name\` is not configured yet
             # Skip installation
