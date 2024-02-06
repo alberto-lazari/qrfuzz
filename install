@@ -2,37 +2,45 @@
 set -e
 cd "$(dirname "$BASH_SOURCE")"
 
+log () {
+    echo "[[1;34m$0[0m] $@"
+}
+
+ok () {
+    echo "[[1;32mOK[0m] $@"
+}
+
 [[ -n "$ANDROID_HOME" ]] ||
     export ANDROID_HOME="$HOME/Android/Sdk"
 
-echo Installing Android SDK in $ANDROID_HOME
+log Installing Android SDK in $ANDROID_HOME
 setup/android-sdk
 
 if ! lsmod | grep -q v4l2loopback; then
-    echo 'Installing `v4l2loopback` kernel module'
+    log 'Installing `v4l2loopback` kernel module'
     setup/v4l2loopback
 else
-    echo '[OK] `v4l2loopback` kernel module already loaded'
+    ok '`v4l2loopback` kernel module already loaded'
 fi
 
 if ! which ffmpeg &> /dev/null; then
-    echo Installing FFmpeg
+    log Installing FFmpeg
     setup/ffmpeg
 else
-    echo [OK] ffmpeg already installed
+    ok ffmpeg already installed
 fi
 
 if ! which npm &> /dev/null; then
-    echo Installing Node.js
+    log Installing Node.js
     setup/nodejs
 else
-    echo [OK] Node.js already installed
+    ok Node.js already installed
 fi
 
 # The setup will be triggered when either the driver or appium itself are missing
 if ! appium driver list --installed 2>&1 | grep -q uiautomator2; then
-    echo Installing Appium
+    log Installing Appium
     setup/appium
 else
-    echo [OK] Appium already installed
+    ok Appium already installed
 fi
