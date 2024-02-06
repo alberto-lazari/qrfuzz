@@ -62,9 +62,8 @@ esac
     [[ -d "$ANDROID_HOME/cmdline-tools" ]] ||
         mkdir -p "$ANDROID_HOME/cmdline-tools"
 
-    log Extracting downloaded package
-    unzip -q "$out" -d "$ANDROID_HOME/cmdline-tools" &&
-        rm "$out"
+    log Extracting $out
+    unzip -q "$out" -d "$ANDROID_HOME/cmdline-tools"
     mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
 }
 
@@ -77,13 +76,16 @@ sdkmanager --version &> /dev/null || {
 
     # Debian-based
     if which apt &> /dev/null; then
+        log 'Running: sudo apt update && sudo apt install openjdk-17-jdk openjdk-17-jre'
         sudo apt update
         sudo apt install openjdk-17-jdk openjdk-17-jre
     # Arch-based
     elif which pacman &> /dev/null; then
+        log 'Running: sudo pacman -S jdk-openjdk'
         sudo pacman -S jdk-openjdk
     # RHEL-based
     elif which dnf &> /dev/null; then
+        log 'Running: sudo dnf install java-17-openjdk'
         sudo dnf install java-17-openjdk
     else
         error No supported package manager was found

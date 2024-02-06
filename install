@@ -16,7 +16,7 @@ ok () {
 which sdkmanager &> /dev/null ||
     export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
 
-# This will fail if there is no sdk installed or the virtual device does not exist
+# The setup will be triggered when either the SDK or the virtual device are not present
 if ! avdmanager list avd 2> /dev/null | grep -q qrfuzz; then
     log Installing Android SDK in $ANDROID_HOME
     setup/android-sdk
@@ -51,4 +51,14 @@ if ! appium driver list --installed 2>&1 | grep -q uiautomator2; then
     setup/appium
 else
     ok Appium already installed
+fi
+
+[[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
+
+if ! npm list | grep -q cns-project; then
+    log Installing fuzzer
+    setup/fuzzer
+else
+    ok Fuzzer already installed
 fi

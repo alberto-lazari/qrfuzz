@@ -1,0 +1,32 @@
+#!/bin/bash
+set -e
+cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
+
+log () {
+    echo "[[1;34m$0[0m] $@"
+}
+
+# NVM might need its environment
+[[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
+
+which appium &> /dev/null || {
+    log Installing dependency: Appium
+    setup/appium
+}
+
+# Install also the forked fuzzer for now
+# TODO: remove it when new one is complete
+(
+    cd QRFuzz/tools/QRCodeFuzzer
+
+    npm list | grep -q qr-code-fuzzer || {
+        log Installing QRCodeFuzzer
+        npm install
+    }
+)
+
+npm list | grep -q cns-project || {
+    log Installing new fuzzer
+    npm install
+}
