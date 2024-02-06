@@ -2,31 +2,36 @@
 set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
+log () {
+    echo "[[1;34m$0[0m] $@"
+}
+
+print_help () {
+    cat >&2 <<- EOF
+	usage: fuzz APP
+	Run fuzzing tests for APP
+
+	arguments:
+	  APP           the app to test
+	options:
+	  -h, --help    show this message
+	EOF
+}
+
 initial_qr=test/qr-examples/qr1.png
 
-# usage: run_test_for APP
-run_test_for () {
-    app="$1"
-    [[ -n "$app" ]] || {
-        echo $0: \`run_test_for\` function: bad usage >&2
-        return 1
-    }
-
-    emulator="$( \
-        adb devices |
-        grep emulator |
-        sed 's/\(emulator-[0-9]*\).*/\1/'
-    )"
-
-    cd QRFuzz/tools/QRCodeFuzzer
-
-    [[ -d "data-tests/$app" ]] ||
-        mkdir -p "data-tests/$app"
-    [[ -f "data-test/$app/fuzzer.json" ]] ||
-        cat data-tests/app-example/fuzzer.json > "data-tests/$app/fuzzer.json"
-
-    node index.js "$app" "data-tests/$app" 4723 "$emulator"
+[[ -n "$1" ]] || {
+    print_help
+    exit 1
 }
+
+case "$1" in
+    -h | --help)
+        print_help
+        exit 0
+        ;;
+    *)  app="$1" ;;
+esac
 
 [[ -n "$ANDROID_HOME" ]] ||
     export ANDROID_HOME="$HOME/Android/Sdk"
@@ -61,7 +66,7 @@ sleep 1
 bin/launch-emulator $device
 emulator_pid=$(< /tmp/emulator.pid)
 
-echo Waiting for the emulator to start
+log Waiting for the emulator to start
 adb wait-for-device
 
 appium &> /tmp/appium.log \
@@ -73,4 +78,17 @@ appium_pid=$!
 # Wait for appium to start
 sleep 2
 
-run_test_for postepay
+emulator="$( \
+    adb devices |
+    grep emulator |
+    sed 's/\(emulator-[0-9]*\).*/\1/'
+)"
+
+cd QRFuzz/tools/QRCodeFuzzer
+
+[[ -d "data-tests/$app" ]] ||
+    mkdir -p "data-tests/$app"
+[[ -f "data-test/$app/fuzzer.json" ]] ||
+    cat data-tests/app-example/fuzzer.json > "data-tests/$app/fuzzer.json"
+
+node index.js "$app" "data-tests/$app" 4723 "$emulator"
