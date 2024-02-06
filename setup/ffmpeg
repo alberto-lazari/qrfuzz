@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+error () {
+    echo "[[1;31mERROR[0m] $@" >&2
+    exit 1
+}
+
 # Debian-based
 if which apt &> /dev/null; then
     sudo apt update
@@ -12,6 +17,5 @@ elif which pacman &> /dev/null; then
 elif which dnf &> /dev/null; then
     sudo dnf install ffmpeg
 else
-    echo $0: no supported package manager was found >&2
-    exit 1
+    error No supported package manager was found
 fi

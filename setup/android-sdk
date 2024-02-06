@@ -1,6 +1,15 @@
 #!/bin/bash
 set -e
 
+log () {
+    echo "[[1;34m$0[0m] $@"
+}
+
+error () {
+    echo "[[1;31mERROR[0m] $@" >&2
+    exit 1
+}
+
 # Name of the emulated Android device
 device=qrfuzz
 
@@ -9,9 +18,7 @@ case "$(uname -m)" in
         arch=arm64-v8a ;;
     x86_64)
         arch=x86_64 ;;
-    *)  echo $0: CPU architecture not supported >&2
-        exit 1
-        ;;
+    *)  error CPU architecture not supported ;;
 esac
 
 system_image="system-images;android-34;google_apis_playstore;$arch"
@@ -21,7 +28,7 @@ case "$(uname)" in
         os=linux
         [[ -n "$ANDROID_HOME" ]] || {
             export ANDROID_HOME=~/Android/Sdk
-            echo $0: environment variable ANDROID_HOME is not set >&2
+            log Environment variable ANDROID_HOME is not set >&2
             read -p 'Do you want to add it to your ~/.bash_profile? (Y/n) ' answer >&2 
             if [[ "$answer" != [Nn] ]]; then
                 echo 'export ANDROID_HOME="$HOME/Android/Sdk"' >> ~/.bash_profile
@@ -40,9 +47,7 @@ case "$(uname)" in
 			EOF
         }
         ;;
-    *)  echo $0: OS not supported >&2
-        exit 1
-        ;;
+    *)  error OS not supported ;;
 esac
 
 # Get from curl
@@ -50,14 +55,14 @@ esac
     link="https://dl.google.com/android/repository/commandlinetools-$os-10406996_latest.zip"
     out=/tmp/commandlinetools-$os-10406996_latest.zip
 
-    echo $0: downloading Android SDK from $link
+    log Downloading Android SDK from $link
     [[ -f "$out" ]] ||
         curl -Lo "$out" "$link"
 
     [[ -d "$ANDROID_HOME/cmdline-tools" ]] ||
         mkdir -p "$ANDROID_HOME/cmdline-tools"
 
-    echo $0: extracting downloaded package
+    log Extracting downloaded package
     unzip -q "$out" -d "$ANDROID_HOME/cmdline-tools" &&
         rm "$out"
     mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
@@ -68,7 +73,7 @@ which sdkmanager &> /dev/null ||
 
 # Check that Java Runtime is installed and is the correct version (>= 17)
 sdkmanager --version &> /dev/null || {
-    echo $0: installing dependency: Java Runtime
+    log Installing dependency: Java Runtime
 
     # Debian-based
     if which apt &> /dev/null; then
@@ -81,8 +86,7 @@ sdkmanager --version &> /dev/null || {
     elif which dnf &> /dev/null; then
         sudo dnf install java-17-openjdk
     else
-        echo $0: no supported package manager was found >&2
-        exit 1
+        error No supported package manager was found
     fi
 }
 
@@ -95,7 +99,7 @@ yes | sdkmanager --install \
 
 # Create virtual device, if not present
 avdmanager list avd | grep -q "$device" || {
-    echo $0: creating virtual device \`$device\`
+    log Creating virtual device \`$device\`
     echo no | avdmanager create avd > /dev/null \
         --force \
         -n "$device" \
