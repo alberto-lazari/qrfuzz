@@ -99,6 +99,7 @@ cd QRFuzz/tools/QRCodeFuzzer
 
 log Starting fuzzing tests
 node index.js "$app" "data-tests/$app" 4723 "$emulator" || {
+    # If the process was terminated by user with ^C (code 130) it's fine
     [[ $? = 130 ]] || {
         warning Fuzzer returned error code $?
         log Something may have gone wrong, try again
