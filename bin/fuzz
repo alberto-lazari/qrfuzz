@@ -5,9 +5,8 @@ cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 log () {
     echo "[[1;34m$0[0m] $@"
 }
-error () {
-    log "[[1;31mERROR[0m] $@" >&2
-    exit 1
+warning () {
+    log "[[1;33mWARNING[0m] $@" >&2
 }
 
 print_help () {
@@ -106,7 +105,7 @@ cd QRFuzz/tools/QRCodeFuzzer
 log Starting fuzzing tests
 node index.js "$app" "data-tests/$app" 4723 "$emulator" || {
     [[ $? = 130 ]] || {
-        error Fuzzer returned error code $?
+        warning Fuzzer returned error code $?
         log Something may have gone wrong, try again
     }
 }
