@@ -20,7 +20,7 @@ ok () {
 
 print_help () {
     cat >&2 <<-EOF
-	usage: apk [-h] APP [...]
+	usage: apk-install [-h] APP [...]
 	Download and install the required APP[s]
 
 	arguments:
@@ -64,8 +64,12 @@ which adb &> /dev/null || {
 # Check that an emulator is running
 [[ -f /tmp/emulator.pid ]] && ps -p $(< /tmp/emulator.pid) &> /dev/null || {
     log Starting Android emulator
-    # TODO: put a real camera
-    bin/launch-emulator /dev/video0
+    util/launch-emulator
+    emulator_pid=$(< /tmp/emulator.pid)
+
+    # Kill the emulator on exit, because it has no webcam set
+    # it is not fit to perform fuzzing
+    trap 'kill $emulator_pid &> /dev/null' EXIT INT TERM
 }
 
 # Wait for the emulator to be ready
@@ -98,7 +102,7 @@ for app in $apps; do
     esac
 
     ! adb shell pm list packages | grep -q $package || {
-        ok $app_name is already installed
+        # App is already installed, skip
         continue
     }
 
