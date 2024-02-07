@@ -4,3 +4,5 @@ video-generation/outputs/
 
 node_modules/
 dist/
+
+.prettier*
