@@ -68,7 +68,11 @@ sleep 2
 # Check that an emulator is running
 [[ -f /tmp/emulator.pid ]] && ps -p $(< /tmp/emulator.pid) &> /dev/null || {
     log Starting Android emulator
+
+    # Launch with an interactive window
     util/launch-emulator "$device"
+    # Launch without a window
+    # util/launch-emulator "$device" -no-window
 }
 
 # Wait for the emulator to start and check that the app is installed
