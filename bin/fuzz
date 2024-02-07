@@ -5,6 +5,10 @@ cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 log () {
     echo "[[1;34m$0[0m] $@"
 }
+error () {
+    log "[[1;31mERROR[0m] $@" >&2
+    exit 1
+}
 
 print_help () {
     cat >&2 <<- EOF
@@ -62,8 +66,11 @@ stream_pid=$(< /tmp/stream.pid)
 # Wait for ffmpeg to start the stream
 sleep 2
 
-log Starting Android emulator
-bin/launch-emulator $device
+# Check that an emulator is running
+[[ -f /tmp/emulator.pid ]] && ps -p $(< /tmp/emulator.pid) &> /dev/null || {
+    log Starting Android emulator
+    bin/launch-emulator "$device"
+}
 
 adb wait-for-device
 until adb shell pm list packages &> /dev/null; do
@@ -97,4 +104,9 @@ cd QRFuzz/tools/QRCodeFuzzer
     cat data-tests/app-example/fuzzer.json > "data-tests/$app/fuzzer.json"
 
 log Starting fuzzing tests
-node index.js "$app" "data-tests/$app" 4723 "$emulator"
+node index.js "$app" "data-tests/$app" 4723 "$emulator" || {
+    [[ $? = 130 ]] || {
+        error Fuzzer returned error code $?
+        log Something may have gone wrong, try again
+    }
+}
