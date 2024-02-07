@@ -11,8 +11,9 @@ The required dependencies can be installed and configured individually by using 
 ## Usage
 
 - `bin/fuzz` will automatically perform fuzzing tests on an application
-- Use `bin/stream <image.png>` to start a stream to the virtual webcam
-- Use `bin/launch-emulator <video-device>` to launch an emulator using `<video-device>` as a virtual webcam
+- Use `util/stream <image.png>` to start a stream to the virtual webcam
+- Use `util/launch-emulator <video-device>` to launch an emulator using `<video-device>` as a virtual webcam
+- Use `util/apk-install <app> [...]` to download and install supported apps on the Android virtual device
 
 ---
 
@@ -52,7 +53,7 @@ Additionally, mind that having a `~/.profile` could prevent `~/.bash_profile` to
 If you want to perform a full reboot of the emulator you can launch it with
 
 ```bash
-bin/launch-emulator <video-device> -no-snapshot-load
+util/launch-emulator <video-device> -no-snapshot-load
 ```
 
 If you want to wipe out every trace of the emulator you can reinstall it with
