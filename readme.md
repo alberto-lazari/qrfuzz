@@ -23,7 +23,7 @@ This project is based on the [original work](https://github.com/spritz-group/QRF
 - [Denis Donadel](https://github.com/donadelden)
 - [Mariano Sciacco](https://github.com/Maxelweb)
 
-It has been developed by students from the University of Padua (UniPD, Italy) as a final project for the "Computer and Network Security" course from the Master's Degrees in Computer Science and Cybersecurity
+It has been developed as a final project for the "Computer and Network Security" course from the Master's Degrees in Computer Science and Cybersecurity of the University of Padua (Unipd, Italy)
 
 ---
 
@@ -32,7 +32,7 @@ It has been developed by students from the University of Padua (UniPD, Italy) as
 Common problems an how to solve them
 
 <details>
-<summary>More</summary>
+<summary>Click to expand</summary>
 
 ### Environment
 
