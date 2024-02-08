@@ -9,7 +9,7 @@ import { exec } from "child_process";
 loader.checkArguments();
 export const _appIns = loader.getAppInspector();
 
-const opts = _appIns.then((appIns) => ({
+const _opts = _appIns.then((appIns) => ({
   path: "/wd/hub",
   port: loader.fuzz_port(), // 4723,
   capabilities: {
@@ -113,7 +113,8 @@ async function main() {
 // Start and set the config for the WebdriverIO
 async function startDriver(timeout = 10000) {
   const wdio = await _wdio;
-  // @ts-expect-error webdriver types does not support appium namespaced capabilities
+  const opts = await _opts;
+  //@ts-expect-error ...
   const driver = await wdio.remote(opts);
   // Wait before crashing if not finding an element
   await driver.setTimeout({ implicit: timeout });
