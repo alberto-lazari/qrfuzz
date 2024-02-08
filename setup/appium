@@ -16,7 +16,7 @@ which npm &> /dev/null || {
 }
 
 which appium &> /dev/null || {
-    log Installing Appium from npm
+    log Installing Appium
     npm install -g appium ||
         # Might need root access
         sudo npm install -g appium

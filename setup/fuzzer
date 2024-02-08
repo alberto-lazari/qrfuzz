@@ -15,18 +15,12 @@ which appium &> /dev/null || {
     setup/appium
 }
 
-# Install also the forked fuzzer for now
-# TODO: remove it when new one is complete
-(
-    cd QRFuzz/tools/QRCodeFuzzer
+which tsc &> /dev/null || {
+    log Installing dependency: TypeScript
+    npm install -g typescript
+}
 
-    npm list | grep -q qr-code-fuzzer || {
-        log Installing QRCodeFuzzer
-        npm install
-    }
-)
-
-npm list | grep -q cns-project || {
-    log Installing new fuzzer
+! npm list 2> /dev/null | grep -q 'UNMET DEPENDENCY' || {
+    log Installing fuzzer
     npm install
 }

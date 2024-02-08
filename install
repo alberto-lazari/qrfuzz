@@ -38,6 +38,9 @@ else
     ok ffmpeg already installed
 fi
 
+[[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
+
 if ! which npm &> /dev/null; then
     log Installing Node.js
     setup/nodejs
@@ -53,10 +56,7 @@ else
     ok Appium already installed
 fi
 
-[[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
-[[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
-
-if ! npm list | grep -q cns-project; then
+if npm list 2> /dev/null | grep -q 'UNMET DEPENDENCY'; then
     log Installing fuzzer
     setup/fuzzer
 else

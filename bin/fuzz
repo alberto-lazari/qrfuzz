@@ -36,15 +36,15 @@ esac
 initial_qr=test/qr-examples/qr1.png
 test_dir="$(realpath "QRFuzz/tools/QRCodeFuzzer/data-tests/$app")"
 
+# Check Android SDK status
 [[ -n "$ANDROID_HOME" ]] ||
     export ANDROID_HOME="$HOME/Android/Sdk"
 which adb &> /dev/null ||
-    export PATH="$ANDROID_HOME/platform-tools:$PATH"
-
+    export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
 which adb &> /dev/null || {
     cat >&2 <<- EOF
 	Android SDK not found
-	It is expected to be in \$ANDROID_HOME: ${ANDROID_HOME/$HOME/\~}
+    It is expected to be in \$ANDROID_HOME: $(sed "s/$HOME/"'~'/ <<< "$ANDROID_HOME")
 	EOF
     read -p 'Do you want to install it? (Y/n) ' answer >&2
     if [[ "$answer" != [Nn] ]]; then
@@ -54,16 +54,40 @@ which adb &> /dev/null || {
     fi
 }
 
+# Check fuzzer status
+[[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
+! npm list 2> /dev/null | grep -q 'UNMET DEPENDENCY' || {
+    warning Fuzzer not found
+    read -p 'Do you want to install it? (Y/n) ' answer >&2
+    if [[ "$answer" != [Nn] ]]; then
+        setup/fuzzer
+    else
+        exit 1
+    fi
+}
+
 # Automatically kill the background services on exit
 trap 'kill $stream_pid $appium_pid &> /dev/null' EXIT INT TERM
+
 
 log Starting video stream to virtual camera
 util/stream "$initial_qr"
 device=$(< /tmp/stream.device)
 stream_pid=$(< /tmp/stream.pid)
 
-# Wait for ffmpeg to start the stream
-sleep 2
+# Wait for the emulator to recognize the virtual camera
+until emulator -webcam-list | grep -q "$device"; do
+    sleep 1
+done
+
+# Start Appium server
+log Starting Appium server
+appium &> /tmp/appium.log \
+    --base-path /wd/hub \
+    -p 4723 \
+    &
+appium_pid=$!
 
 # Check that an emulator is running
 [[ -f /tmp/emulator.pid ]] && ps -p $(< /tmp/emulator.pid) &> /dev/null || {
@@ -78,15 +102,6 @@ sleep 2
 # Wait for the emulator to start and check that the app is installed
 util/apk-install $app
 
-log Starting Appium server
-appium &> /tmp/appium.log \
-    --base-path /wd/hub \
-    -p 4723 \
-    &
-appium_pid=$!
-
-# Wait for appium to start
-sleep 5
 
 emulator="$( \
     adb devices |
