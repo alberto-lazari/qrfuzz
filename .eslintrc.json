@@ -19,5 +19,11 @@
   "rules": {
     "@typescript-eslint/consistent-type-definitions": ["error", "type"]
   },
-  "root": true
+  "root": true,
+  "overrides": [
+    {
+      "files": ["*.js"],
+      "extends": ["plugin:@typescript-eslint/disable-type-checked"]
+    }
+  ]
 }

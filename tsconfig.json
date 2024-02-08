@@ -3,7 +3,6 @@
   "include": ["src/**/*"],
   "compilerOptions": {
     "allowJs": true,
-    "checkJs": true,
 
     "rootDir": "./src",
     "noEmit": true,

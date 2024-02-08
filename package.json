@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/albertolazari/cns-project#readme",
   "dependencies": {
-    "qrcode": "^1.5.3"
+    "qrcode": "^1.5.3",
+    "webdriverio": "^8.29.7"
   }
 }
