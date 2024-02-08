@@ -82,7 +82,7 @@ done
     mkdir -p "$apk_directory"
 
 for app in $apps; do
-    download=true
+    # First character is uppercase
     app_name=$(sed 's/.*/\u&/' <<< $app)
     file="$apk_directory/$app.apk"
 
@@ -102,24 +102,27 @@ for app in $apps; do
     esac
 
     ! adb shell pm list packages | grep -q $package || {
-        # App is already installed, skip
+        ok $app_name is installed
         continue
     }
 
     # Check if file is already downloaded
-    [[ ! -f "$file" ]] || {
-        ok $app_name already downloaded in $file
-        download=false
-    }
-
-    ! $download || {
+    if [[ ! -f "$file" ]]; then
         log Downloading $app_name
         curl -L "$link" -o "$file"
         ok $app_name downloaded in $file
-    }
+    else
+        ok $app_name already downloaded in $file
+    fi
 
     log Installing $app_name
     until adb install "$file" &> /dev/null; do
+        # Check that the downloaded APK is not corrupted
+        # It could be caused by an incomplete download or broken url
+        ! adb install "$file" 2>&1 | grep -q INSTALL_PARSE_FAILED_NOT_APK || {
+            rm "$file"
+            error File \`$file\` is corrupted, try again
+        }
         sleep 1
     done
     ok $app_name installed
