@@ -127,10 +127,7 @@ async function goToAppScanPage(driver: WebdriverIO.Browser) {
     const msg = `[index.ts] Unable to go to the scan page (error: ${error as string})`;
     console.log(msg);
     log(data_path, msg);
-    console.log(
-      "[index.ts] Please place the App manually in the scan page; then press any key to continue..."
-    );
-    await keypress();
+    await appIns.goBackToScan(driver);
   }
 }
 
