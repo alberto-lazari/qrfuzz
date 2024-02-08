@@ -55,12 +55,14 @@ esac
     out=/tmp/commandlinetools-$os-10406996_latest.zip
 
     log Downloading Android SDK from $link
-    [[ -f "$out" ]] || {
+    [[ ! -f "$out" ]] || {
         log Already downloaded in $out
         read -p "Do you want to download it again? (Y/n) " answer >&2
-        [[ "$answer" = [Nn] ]] ||
-            curl -Lo "$out" "$link"
     }
+
+    [[ "$answer" = [Nn] ]] ||
+        # The download will start if the file does not exist ($answer will be unset)
+        curl -Lo "$out" "$link"
 
     [[ -d "$ANDROID_HOME/cmdline-tools" ]] ||
         mkdir -p "$ANDROID_HOME/cmdline-tools"
