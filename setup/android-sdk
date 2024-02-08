@@ -4,7 +4,6 @@ set -e
 log () {
     echo "[[1;34m$0[0m] $@"
 }
-
 error () {
     log "[[1;31mERROR[0m] $@" >&2
     exit 1
@@ -51,13 +50,17 @@ case "$(uname)" in
 esac
 
 # Get from curl
-[[ -d "$ANDROID_HOME/cmdline-tools" ]] || {
+[[ -d "$ANDROID_HOME/cmdline-tools/latest" ]] || {
     link="https://dl.google.com/android/repository/commandlinetools-$os-10406996_latest.zip"
     out=/tmp/commandlinetools-$os-10406996_latest.zip
 
     log Downloading Android SDK from $link
-    [[ -f "$out" ]] ||
-        curl -Lo "$out" "$link"
+    [[ -f "$out" ]] || {
+        log Already downloaded in $out
+        read -p "Do you want to download it again? (Y/n) " answer >&2
+        [[ "$answer" = [Nn] ]] ||
+            curl -Lo "$out" "$link"
+    }
 
     [[ -d "$ANDROID_HOME/cmdline-tools" ]] ||
         mkdir -p "$ANDROID_HOME/cmdline-tools"
@@ -71,6 +74,7 @@ which sdkmanager &> /dev/null ||
     export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
 
 # Check that Java Runtime is installed and is the correct version (>= 17)
+# sdkmanager crashes if no java runtime is installed
 sdkmanager --version &> /dev/null || {
     log Installing dependency: Java Runtime
 
