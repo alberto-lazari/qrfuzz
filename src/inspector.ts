@@ -1,5 +1,7 @@
 import { resolve } from "path";
 import { AppId } from "./apps";
+import { log } from "./logger";
+import { data_path } from "./loader";
 
 const INSPECTORS_DIRNAME = "inspectors";
 
@@ -10,17 +12,22 @@ export type Inspector = {
   goToScan(driver: WebdriverIO.Browser): Promise<void>;
   getResultView(
     driver: WebdriverIO.Browser
-  ): Promise<{ error: "no such element" }>;
+  ): Promise<
+    { error: "no such element" } | { error: undefined; ELEMENT: string }
+  >;
   goBackToScan(driver: WebdriverIO.Browser): Promise<void>;
 };
 
-export type InspectorModule = {
-  Inspector: { prototype: Inspector };
+type InspectorModule = {
+  Inspector: new () => Inspector;
 };
 
 export const get_inspector = async (app: AppId) => {
   const module = (await import(
     resolve(__dirname, INSPECTORS_DIRNAME, app)
   )) as InspectorModule;
-  return module.Inspector;
+  const inspector = new module.Inspector();
+  console.debug(inspector);
+  log(data_path(), `Inspector ${app} loaded`);
+  return inspector;
 };

@@ -1,27 +1,29 @@
 import { exec } from "child_process";
 import { appendFile, writeFile } from "fs/promises";
 import { resolve } from "path";
-import { _appIns } from ".";
-import * as loader from "./loader";
+import { Inspector } from "./inspector";
+
 const _qrcodelogs_file = "qrcodes-logs.log";
 const _screen_path = "screen/";
 
-export const log = async (data_path: string, message: string) => {
-  await appendFile(resolve(data_path, _qrcodelogs_file), message).catch((err) =>
-    console.warn("[QRCodeFuzzer] SAVE_SCREENSHOT error: " + JSON.stringify(err))
+export const log = (data_path: string, message: string) => {
+  if (!message.endsWith("\n")) {
+    message += "\n";
+  }
+  appendFile(resolve(data_path, _qrcodelogs_file), message).catch((err) =>
+    console.warn(`[logger.ts] log error: ${JSON.stringify(err)}`)
   );
 };
 
-export async function saveLogcat(
+export const saveLogcat = async (
+  appIns: Inspector,
   data_path: string,
   name: string,
   driver: WebdriverIO.Browser
-) {
+) => {
   const logs = (await driver.getLogs("logcat")) as { message: string }[];
-  const appIns = await _appIns;
-
   // execute child process searching for pid : `adb shell pidof apppackage`
-  exec("adb shell pidof " + appIns.app_package, function (_error, stdOut) {
+  exec(`adb shell pidof ${appIns.app_package}`, function (_error, stdOut) {
     const pid = Number(stdOut);
     let logcat = "";
 
@@ -44,22 +46,21 @@ export async function saveLogcat(
     }
 
     appendFile(resolve(data_path, "logs", name), logcat).catch((err) => {
-      console.log("[QRCodeFuzzer] " + JSON.stringify(err));
+      console.log(`[QRCodeFuzzer] ${JSON.stringify(err)}`);
     });
   });
-}
+};
 
-export async function saveScreenshot(
+export const saveScreenshot = async (
+  data_path: string,
   name: string,
   driver: WebdriverIO.Browser
-) {
+) => {
   const image = await driver.takeScreenshot();
   await Promise.all([
     await writeFile(resolve(_screen_path, name), image, "base64").catch((err) =>
-      console.warn(
-        "[QRCodeFuzzer] SAVE_SCREENSHOT error: " + JSON.stringify(err)
-      )
+      console.warn(`[logger.ts] saveScreenshot error: ${JSON.stringify(err)}`)
     ),
-    log(loader.data_path(), "OK"),
+    log(data_path, "OK\n"),
   ]);
-}
+};

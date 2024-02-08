@@ -7,7 +7,7 @@ import sleep from "./sleep";
 import { exec } from "child_process";
 
 loader.checkArguments();
-export const _appIns = loader.getAppInspector();
+const _appIns = loader.getAppInspector();
 
 const _opts = _appIns.then((appIns) => ({
   path: "/wd/hub",
@@ -27,11 +27,11 @@ const tmp_qr = "/tmp/qr_code.png";
 // Main loop
 // Curious developer, start from here :)
 
-async function main() {
+const main = async () => {
   const data_path = loader.data_path();
   const wdio_timeout = loader.wdio_timeout();
-  let driver = await startDriver(wdio_timeout);
 
+  let driver = await startDriver(wdio_timeout);
   const appIns = await _appIns;
 
   await goToAppScanPage(driver);
@@ -53,9 +53,7 @@ async function main() {
     const line_idx = qr_status.line_idx;
     const name = `${dict}-${line_idx}`;
 
-    console.log(
-      "> QR code under analysis: file: " + dict + ", line: " + line_idx
-    );
+    console.log(`> QR code under analysis: file: ${dict}, line: ${line_idx}`);
 
     driver = await checkAppRunningAndRestart(driver, wdio_timeout);
 
@@ -63,26 +61,25 @@ async function main() {
     const result_view = await appIns.getResultView(driver);
 
     // Result view error check
-    if (result_view && result_view.error == "no such element") {
-      const msg =
-        "[QRCodeFuzzer] Unable to read QR Code: file: " +
-        dict +
-        ", line: " +
-        line_idx;
+    if (result_view?.error == "no such element") {
+      const msg = `[index.ts] Unable to read QR Code: file: ${dict}, line: ${line_idx}`;
       console.log(msg);
 
+      log(data_path, msg);
       await Promise.all([
-        log(data_path, msg),
-        saveLogcat(data_path, name, driver),
-        saveScreenshot(name, driver),
+        saveLogcat(appIns, data_path, name, driver),
+        saveScreenshot(data_path, name, driver),
       ]);
     } else {
       // Await for the script before taking a screenshot
       await sleep(200);
+      const msg = `[index.ts] Read QR Code: file: ${dict}, line: ${line_idx}`;
+      console.log(msg);
 
+      log(data_path, msg);
       await Promise.all([
-        saveLogcat(data_path, name, driver),
-        saveScreenshot(name, driver),
+        saveLogcat(appIns, data_path, name, driver),
+        saveScreenshot(data_path, name, driver),
       ]);
 
       try {
@@ -95,18 +92,18 @@ async function main() {
   }
 
   await driver.deleteSession();
-}
+};
 
-// TODO save iterator state to resume fuzzing later
-// // Get the JSON parameters of fuzzer.json
+//  TODO save iterator state to resume fuzzing later
+// Get the JSON parameters of fuzzer.json
 // function getJsonParams() {
 //   let file = "start";
 //   var n = fuzzer.size(loader.fuzz_path());
 //   var start = loader.fuzz_start();
 //   if (start > 0) {
-//     console.log("[QRCodeFuzzer] Resuming QR codes from <" + start + "> of <" + n + ">")
+//     console.log(`[QRCodeFuzzer] Resuming QR codes from <${start}> of <${n}>`);
 //   }
-//   console.log("[QRCodeFuzzer] Scan page reached! " + start);
+//   console.log(`[QRCodeFuzzer] Scan page reached! ${start}`);
 //   return { start, n, file };
 // }
 
@@ -122,16 +119,16 @@ async function startDriver(timeout = 10000) {
 }
 
 async function goToAppScanPage(driver: WebdriverIO.Browser) {
+  const appIns = await _appIns;
+  const data_path = loader.data_path();
   try {
-    await (await _appIns).goToScan(driver);
+    await appIns.goToScan(driver);
   } catch (error) {
+    const msg = `[index.ts] Unable to go to the scan page (error: ${error as string})`;
+    console.log(msg);
+    log(data_path, msg);
     console.log(
-      "[QRCodeFuzzer] Unable to go to the scan page (error: " +
-        (error as string) +
-        ")"
-    );
-    console.log(
-      "[QRCodeFuzzer] Please place the App manually in the scan page; then press any key to continue..."
+      "[index.ts] Please place the App manually in the scan page; then press any key to continue..."
     );
     await keypress();
   }

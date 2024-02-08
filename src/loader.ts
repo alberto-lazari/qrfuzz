@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs";
-import { InspectorModule } from "./inspector";
+import { get_inspector } from "./inspector";
+import { AppId } from "./apps";
 
 // Default variables
 let port = 4723;
@@ -14,7 +15,7 @@ const ifiles: string[] = [];
 
 function checkArguments() {
   console.info(
-    "[Usage:] node index.js <app_inspector> [optional: <data_path> <appium_port> <appium_device_udid> <starting_from>]",
+    "[Usage:] node index.js <app_inspector> [optional: <data_path> <appium_port> <appium_device_udid> <starting_from>]"
   );
 
   const argPath = process.argv[3];
@@ -23,14 +24,14 @@ function checkArguments() {
   const argStartFrom = process.argv[6];
 
   if (argPath === undefined)
-    console.warn("[QRCodeFuzzer] Defaulting to path " + dpath);
+    console.warn(`[QRCodeFuzzer] Defaulting to path ${dpath}`);
   else {
     dpath = argPath;
 
     if (dpath.endsWith("/")) {
       dpath = dpath.slice(0, -1);
     }
-    console.info("[QRCodeFuzzer] Using path: " + dpath);
+    console.info(`[QRCodeFuzzer] Using path: ${dpath}`);
   }
 
   if (!fs.existsSync(dpath)) {
@@ -39,33 +40,33 @@ function checkArguments() {
   }
 
   if (argPort === undefined)
-    console.warn("[QRCodeFuzzer] Defaulting to port " + port);
+    console.warn(`[QRCodeFuzzer] Defaulting to port ${port}`);
   else {
     port = parseInt(argPort);
     if (isNaN(port)) {
       console.error("[QRCodeFuzzer] Wrong port number, not a number");
       process.exit(1);
     } else {
-      console.info("[QRCodeFuzzer] Using port: " + port);
+      console.info(`[QRCodeFuzzer] Using port: ${port}`);
     }
   }
 
   if (argDevice === undefined)
-    console.warn("[QRCodeFuzzer] Defaulting to device name: " + device);
+    console.warn(`[QRCodeFuzzer] Defaulting to device name: ${device}`);
   else {
     device = argDevice;
-    console.info("[QRCodeFuzzer] Using device name: " + device);
+    console.info(`[QRCodeFuzzer] Using device name: ${device}`);
   }
 
   if (argStartFrom === undefined)
-    console.warn("[QRCodeFuzzer] Default start from " + dstart);
+    console.warn(`[QRCodeFuzzer] Default start from ${dstart}`);
   else {
     dstart = parseInt(argStartFrom);
     if (isNaN(dstart)) {
       console.error("[QRCodeFuzzer] Wrong start, not a number");
       process.exit(1);
     } else {
-      console.info("[QRCodeFuzzer] Starting from: " + dstart);
+      console.info(`[QRCodeFuzzer] Starting from: ${dstart}`);
     }
   }
 }
@@ -83,7 +84,7 @@ async function getAppInspector() {
 
   if (arg === undefined || !ifiles.includes(arg)) {
     console.log(
-      "[QRCodeFuzzer] Wrong inspector passed! Please pass a filename from ./inspectors folder. Available options: ",
+      "[QRCodeFuzzer] Wrong inspector passed! Please pass a filename from ./inspectors folder. Available options: "
     );
     console.log(ifiles);
     process.exit(1);
@@ -91,7 +92,7 @@ async function getAppInspector() {
 
   console.log("[QRCodeFuzzer] OK, starting Appium...");
 
-  return ((await import("./inspectors/" + arg + ".js")) as InspectorModule).Inspector.prototype;
+  return get_inspector(arg as AppId);
 }
 
 const getPath = () => dpath;
