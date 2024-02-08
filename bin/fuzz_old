@@ -94,14 +94,16 @@ emulator="$( \
     sed 's/\(emulator-[0-9]*\).*/\1/'
 )"
 
-cd src
+cd QRFuzz/tools/QRCodeFuzzer
 
 # Create directories and files
 [[ -d "$test_dir/screen" ]] || mkdir -p "$test_dir/screen"
 [[ -d "$test_dir/logs" ]] || mkdir -p "$test_dir/logs"
+[[ -f "data-test/$app/fuzzer.json" ]] ||
+    cat data-tests/app-example/fuzzer.json > "$test_dir/fuzzer.json"
 
 log Starting fuzzing tests
-npx tsx index.ts "$app" "$test_dir" 4723 "$emulator" || {
+node index.js "$app" "$test_dir" 4723 "$emulator" || {
     # If the process was terminated by user with ^C (code 130) it's fine
     [[ $? = 130 ]] || {
         warning Fuzzer returned error code $?
