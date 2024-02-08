@@ -2,6 +2,8 @@
 set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
+initial_qr=test/qr-examples/qr1.png
+
 log () {
     echo "[[1;34m$0[0m] $@"
 }
@@ -20,8 +22,6 @@ print_help () {
 	  -h, --help    show this message
 	EOF
 }
-
-initial_qr=test/qr-examples/qr1.png
 
 [[ -n "$1" ]] || {
     print_help
@@ -96,13 +96,15 @@ emulator="$( \
 
 cd QRFuzz/tools/QRCodeFuzzer
 
-[[ -d "data-tests/$app" ]] ||
-    mkdir -p "data-tests/$app"
+# Create directories and files
+test_dir="data-tests/$app"
+[[ -d "$test_dir/screen" ]] || mkdir -p "$test_dir/screen"
+[[ -d "$test_dir/logs" ]] || mkdir -p "$test_dir/logs"
 [[ -f "data-test/$app/fuzzer.json" ]] ||
-    cat data-tests/app-example/fuzzer.json > "data-tests/$app/fuzzer.json"
+    cat data-tests/app-example/fuzzer.json > "$test_dir/fuzzer.json"
 
 log Starting fuzzing tests
-node index.js "$app" "data-tests/$app" 4723 "$emulator" || {
+node index.js "$app" "$test_dir" 4723 "$emulator" || {
     # If the process was terminated by user with ^C (code 130) it's fine
     [[ $? = 130 ]] || {
         warning Fuzzer returned error code $?
