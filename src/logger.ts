@@ -61,6 +61,6 @@ export const saveScreenshot = async (
     await writeFile(resolve(_screen_path, name), image, "base64").catch((err) =>
       console.warn(`[logger.ts] saveScreenshot error: ${JSON.stringify(err)}`)
     ),
-    log(data_path, "OK\n"),
+    log(data_path, "OK"),
   ]);
 };
