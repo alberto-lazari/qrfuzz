@@ -2,8 +2,6 @@
 set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
-initial_qr=test/qr-examples/qr1.png
-
 log () {
     echo "[[1;34m$0[0m] $@"
 }
@@ -27,7 +25,6 @@ print_help () {
     print_help
     exit 1
 }
-
 case "$1" in
     -h | --help)
         print_help
@@ -35,6 +32,9 @@ case "$1" in
         ;;
     *)  app="$1" ;;
 esac
+
+initial_qr=test/qr-examples/qr1.png
+test_dir="$(realpath "QRFuzz/tools/QRCodeFuzzer/data-tests/$app")"
 
 [[ -n "$ANDROID_HOME" ]] ||
     export ANDROID_HOME="$HOME/Android/Sdk"
@@ -97,7 +97,6 @@ emulator="$( \
 cd QRFuzz/tools/QRCodeFuzzer
 
 # Create directories and files
-test_dir="data-tests/$app"
 [[ -d "$test_dir/screen" ]] || mkdir -p "$test_dir/screen"
 [[ -d "$test_dir/logs" ]] || mkdir -p "$test_dir/logs"
 [[ -f "data-test/$app/fuzzer.json" ]] ||
