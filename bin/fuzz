@@ -3,7 +3,6 @@ set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 initial_qr=test/qr-examples/qr1.png
-test_dir="$(realpath src)"
 emulator_gui=true
 
 log () {
@@ -53,6 +52,8 @@ done
     print_help
     exit 1
 }
+
+test_dir="$PWD/data-tests/$app"
 
 # Check Android SDK status
 [[ -n "$ANDROID_HOME" ]] ||

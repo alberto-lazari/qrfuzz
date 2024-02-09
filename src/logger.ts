@@ -58,7 +58,11 @@ export const saveScreenshot = async (
 ) => {
   const image = await driver.takeScreenshot();
   await Promise.all([
-    await writeFile(resolve(_screen_path, name), image, "base64").catch((err) =>
+    await writeFile(
+      resolve(data_path, _screen_path, name),
+      image,
+      "base64"
+    ).catch((err) =>
       console.warn(`[logger.ts] saveScreenshot error: ${JSON.stringify(err)}`)
     ),
     log(data_path, "OK"),
