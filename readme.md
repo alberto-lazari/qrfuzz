@@ -1,4 +1,4 @@
-# CNS project
+# QRFuzz
 
 A fuzzing toolkit to test malicious QR Codes in mobile applications
 
