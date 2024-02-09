@@ -67,6 +67,25 @@ esac
     [[ -d "$ANDROID_HOME/cmdline-tools" ]] ||
         mkdir -p "$ANDROID_HOME/cmdline-tools"
 
+    which unzip &> /dev/null || {
+        # Debian-based
+        if which apt &> /dev/null; then
+            log 'Running: sudo apt update && sudo apt install unzip'
+            sudo apt update
+            sudo apt install unzip
+        # Arch-based
+        elif which pacman &> /dev/null; then
+            log 'Running: sudo pacman -S unzip'
+            sudo pacman -S unzip
+        # RHEL-based
+        elif which dnf &> /dev/null; then
+            log 'Running: sudo dnf install unzip'
+            sudo dnf install unzip
+        else
+            error No supported package manager was found
+        fi
+    }
+
     log Extracting $out
     unzip -q "$out" -d "$ANDROID_HOME/cmdline-tools"
     mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"

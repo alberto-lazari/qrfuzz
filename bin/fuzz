@@ -44,7 +44,7 @@ which adb &> /dev/null ||
 which adb &> /dev/null || {
     cat >&2 <<- EOF
 	Android SDK not found
-    It is expected to be in \$ANDROID_HOME: $(sed "s/$HOME/"'~'/ <<< "$ANDROID_HOME")
+	It is expected to be in \$ANDROID_HOME: $(sed "s|$HOME"'|~|' <<< "$ANDROID_HOME")
 	EOF
     read -p 'Do you want to install it? (Y/n) ' answer >&2
     if [[ "$answer" != [Nn] ]]; then
