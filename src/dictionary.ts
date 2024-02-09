@@ -1,7 +1,10 @@
-import { opendir, readFile } from "fs/promises";
-import path from "path";
+import { opendir, readFile, writeFile } from "fs/promises";
+import path, { resolve } from "path";
+import { AppId } from "./apps";
+import { data_path } from "./loader";
 
 const DICTS_DIR = path.resolve(__dirname, "dicts/");
+const STATE_FILE = "fuzzer_state.json";
 
 type DictFile = {
   name: string;
@@ -23,12 +26,13 @@ export const list_dicts = async (refresh = false): Promise<DictFile[]> => {
       }
     }
 
-    memo = list;
+    memo = list.sort();
   }
   return memo;
 };
 
 export type DictsIterStatus = {
+  app: string;
   files: string[];
   dict_idx: number;
   line_idx: number;
@@ -50,17 +54,93 @@ const read_lines = async (file: string): Promise<Uint8Array[]> => {
       }
       return [payloads, line_start];
     },
-    [[], 0],
+    [[], 0]
   );
   return payloads;
 };
 
-export const dicts_iterator = async (
+export const getState = async (
+  app: AppId,
+  files: string[]
+): Promise<DictsIterStatus | null> => {
+  const status: DictsIterStatus | null = await readFile(
+    resolve(data_path(), STATE_FILE),
+    "utf-8"
+  )
+    .then((content) => {
+      try {
+        const state = JSON.parse(content) as DictsIterStatus;
+        return state;
+      } catch (error) {
+        // JSON.parse failed
+        const msg = `Parse of file ${STATE_FILE} failed.`;
+        throw msg;
+      }
+    })
+    .catch((err: { code: string }) => {
+      if (err.code === "ENOENT") {
+        console.log(`File ${STATE_FILE} not found.`);
+        return null;
+      }
+      throw err;
+    });
+
+  if (status === null) {
+    console.log(`App ${app} does not have a saved status in ${STATE_FILE}.`);
+    return null;
+  } else if (
+    status.app === app &&
+    Array.isArray(status.files) &&
+    status.files.every((f) => typeof f === "string") &&
+    typeof status.dict_idx === "number" &&
+    Number.isInteger(status.dict_idx) &&
+    typeof status.line_idx === "number" &&
+    Number.isInteger(status.line_idx)
+  ) {
+    if (
+      status.files.length !== files.length ||
+      status.files.some((v, i) => v !== files[i])
+    )
+      throw `Available dicts for ${app} have changed from\n\t${status.files.toString()}to\n\t${files.toString()}`;
+    else
+      return {
+        app,
+        files,
+        dict_idx: Number(status.dict_idx),
+        line_idx: Number(status.line_idx),
+      };
+  } else {
+    throw `File ${STATE_FILE} is malformed.`;
+  }
+};
+
+export const saveState = async (status: DictsIterStatus) => {
+  await writeFile(resolve(data_path(), STATE_FILE), JSON.stringify(status));
+};
+
+export const dicts_iterator = async (app: string, files: string[]) => {
+  const _dicts = Promise.all(files.map(read_lines));
+  const status = await getState(app as AppId, files).catch((err) => {
+    throw `Error reading ${STATE_FILE}:\n\t${err}`;
+  });
+  const dicts = await _dicts;
+  if (status !== null) {
+    console.log(
+      `${app}: iterating on ${files.toString()} from file n° ${status.dict_idx}, line n° ${status.line_idx}`
+    );
+    return _dicts_iterator(app, files, dicts, status.dict_idx, status.line_idx);
+  }
+  console.log(`${app}: iterating on ${files.toString()} from the beginning`);
+  return _dicts_iterator(app, files, dicts);
+};
+
+const _dicts_iterator = (
+  app: string,
   files: string[],
+  dicts: Uint8Array[][],
   dict_start = 0,
-  line_start = 0,
-): Promise<DictsIterator> => {
-  const dicts = await Promise.all(files.map(read_lines));
+  line_start = 0
+): DictsIterator => {
   let dict_idx = dict_start;
   let line_idx = line_start;
 
@@ -69,7 +149,7 @@ export const dicts_iterator = async (
 
     if (dict === undefined) {
       // there are no more lines
-      return [null, { files, dict_idx, line_idx }];
+      return [null, { app, files, dict_idx, line_idx }];
     }
 
     let line = dict[line_idx];
@@ -77,7 +157,7 @@ export const dicts_iterator = async (
     if (line !== undefined) {
       // next line is in the same dict
       line_idx++;
-      return [line, { files, dict_idx, line_idx }];
+      return [line, { app, files, dict_idx, line_idx }];
     }
 
     // use the first line of the next dict with at least one line
@@ -102,7 +182,7 @@ export const dicts_iterator = async (
       line_idx++;
     }
 
-    return [line ?? null, { files, dict_idx, line_idx }];
+    return [line ?? null, { app, files, dict_idx, line_idx }];
   };
 };
 

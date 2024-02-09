@@ -1,12 +1,18 @@
 const _wdio = import("webdriverio");
 import * as loader from "./loader";
 import * as qr_writer from "./qr_code";
-import dicts_iterator, { DictsIterStatus, list_dicts } from "./dictionary.js";
+import {
+  dicts_iterator,
+  list_dicts,
+  saveState,
+  DictsIterStatus,
+} from "./dictionary.js";
 import { log, saveLogcat, saveScreenshot } from "./logger";
 import sleep from "./sleep";
 import { exec } from "child_process";
 
 loader.checkArguments();
+const app_id = loader.app_name();
 const _appIns = loader.getAppInspector();
 
 const _opts = _appIns.then((appIns) => ({
@@ -38,7 +44,7 @@ const main = async () => {
 
   // by default fuzz all
   const files = (await list_dicts()).map((dict) => dict.fullname);
-  const qr_iter = await dicts_iterator(files);
+  const qr_iter = await dicts_iterator(app_id, files);
 
   // Perform QR Checking
   let qr_payload: Uint8Array | null;
@@ -89,23 +95,12 @@ const main = async () => {
         await goToAppScanPage(driver);
       }
     }
+
+    await saveState(qr_status);
   }
 
   await driver.deleteSession();
 };
-
-//  TODO save iterator state to resume fuzzing later
-// Get the JSON parameters of fuzzer.json
-// function getJsonParams() {
-//   let file = "start";
-//   var n = fuzzer.size(loader.fuzz_path());
-//   var start = loader.fuzz_start();
-//   if (start > 0) {
-//     console.log(`[QRCodeFuzzer] Resuming QR codes from <${start}> of <${n}>`);
-//   }
-//   console.log(`[QRCodeFuzzer] Scan page reached! ${start}`);
-//   return { start, n, file };
-// }
 
 // Start and set the config for the WebdriverIO
 async function startDriver(timeout = 10000) {
