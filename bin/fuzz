@@ -57,7 +57,10 @@ which adb &> /dev/null || {
 # Check fuzzer status
 [[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
 [[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
-! npm list 2> /dev/null | grep -q 'UNMET DEPENDENCY' || {
+which npm &> /dev/null &&
+    ! npm list 2> /dev/null |
+    grep -q 'UNMET DEPENDENCY' ||
+{
     warning Fuzzer not found
     read -p 'Do you want to install it? (Y/n) ' answer >&2
     if [[ "$answer" != [Nn] ]]; then
@@ -90,7 +93,9 @@ appium &> /tmp/appium.log \
 appium_pid=$!
 
 # Check that an emulator is running
-[[ -f /tmp/emulator.pid ]] && ps -p $(< /tmp/emulator.pid) &> /dev/null || {
+[[ -f /tmp/emulator.pid ]] &&
+    ps -p $(< /tmp/emulator.pid) &> /dev/null ||
+{
     log Starting Android emulator
 
     # Launch with an interactive window

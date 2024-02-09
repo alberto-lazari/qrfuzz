@@ -13,6 +13,10 @@ log () {
 which npm &> /dev/null || {
     log Installing dependency: Node.js
     setup/nodejs
+
+    # Need to load the environment after install
+    [[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
+    [[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
 }
 
 which appium &> /dev/null || {
