@@ -67,8 +67,8 @@ const main = async () => {
 
       log(data_path, msg);
       await Promise.all([
-        saveLogcat(appIns, data_path, name, driver),
-        saveScreenshot(data_path, name, driver),
+        saveLogcat(appIns, data_path, name + ".log", driver),
+        saveScreenshot(data_path, name + ".png", driver),
       ]);
     } else {
       // Await for the script before taking a screenshot
@@ -78,8 +78,8 @@ const main = async () => {
 
       log(data_path, msg);
       await Promise.all([
-        saveLogcat(appIns, data_path, name, driver),
-        saveScreenshot(data_path, name, driver),
+        saveLogcat(appIns, data_path, name + ".log", driver),
+        saveScreenshot(data_path, name + ".png", driver),
       ]);
 
       try {
