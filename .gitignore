@@ -8,5 +8,4 @@ dist/
 
 .prettier*
 
-src/logs
-src/screen
+data-tests/
