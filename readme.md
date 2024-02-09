@@ -10,7 +10,7 @@ The required dependencies can be installed and configured individually by using 
 
 ## Usage
 
-- `bin/fuzz` will automatically perform fuzzing tests on an application
+- `bin/fuzz <app>` will automatically perform fuzzing tests on an application and install all required dependencies
 - Use `util/stream <image.png>` to start a stream to the virtual webcam
 - Use `util/launch-emulator [<video-device>]` to launch an emulator using `<video-device>` as a virtual webcam
 - Use `util/apk-install <app> [...]` to download and install supported apps on the Android virtual device
