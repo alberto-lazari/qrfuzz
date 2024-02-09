@@ -11,6 +11,10 @@ log () {
 warning () {
     log "[[1;33mWARNING[0m] $@" >&2
 }
+error () {
+    log "[[1;31mERROR[0m] $@" >&2
+    exit 1
+}
 
 print_help () {
     cat >&2 <<- EOF
@@ -120,8 +124,9 @@ cd src
 log Starting fuzzing tests
 npx tsx index.ts "$app" "$test_dir" 4723 "$emulator" || {
     # If the process was terminated by user with ^C (code 130) it's fine
-    [[ $? = 130 ]] || {
-        warning Fuzzer returned error code $?
-        log Something may have gone wrong, try again
+    error_code=$?
+    [[ $error_code = 130 ]] || {
+        warning Something may have gone wrong, try again
+        error Fuzzer returned error code $error_code
     }
 }
