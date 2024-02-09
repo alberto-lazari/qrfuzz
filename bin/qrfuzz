@@ -18,7 +18,7 @@ error () {
 
 print_help () {
     cat >&2 <<- EOF
-	usage: fuzz [-hn] <app>
+	usage: qrfuzz [-hn] <app>
 	Run fuzzing tests for <app>
 
 	arguments:
