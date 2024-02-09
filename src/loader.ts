@@ -14,9 +14,9 @@ const ifiles: string[] = [];
 // Main argument checker function
 
 function checkArguments() {
-  console.info(
-    "[Usage:] node index.js <app_inspector> [optional: <data_path> <appium_port> <appium_device_udid> <starting_from>]"
-  );
+  // console.info(
+  //   "[Usage:] node index.js <app_inspector> [optional: <data_path> <appium_port> <appium_device_udid> <starting_from>]"
+  // );
 
   const argPath = process.argv[3];
   const argPort = process.argv[4];
