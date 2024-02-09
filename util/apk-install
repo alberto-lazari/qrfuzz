@@ -62,7 +62,9 @@ which adb &> /dev/null || {
 }
 
 # Check that an emulator is running
-[[ -f /tmp/emulator.pid ]] && ps -p $(< /tmp/emulator.pid) &> /dev/null || {
+[[ -f /tmp/emulator.pid ]] &&
+    ps -p $(< /tmp/emulator.pid) &> /dev/null ||
+{
     log Starting Android emulator
     util/launch-emulator
     emulator_pid=$(< /tmp/emulator.pid)
@@ -72,17 +74,14 @@ which adb &> /dev/null || {
     trap 'kill $emulator_pid &> /dev/null' EXIT INT TERM
 }
 
-# Wait for the emulator to be ready
-adb wait-for-device
-
-! adb devices | grep unauthorized || {
-    # Kill adb server, or it will keep listing emulators as unauthorized
-    adb kill-server
-    error The emulator is unauthorized, try reinstalling it
-}
-
 log Waiting for Android package manager to be ready
 until adb shell pm list packages &> /dev/null; do
+    ! adb devices | grep -q unauthorized || {
+        # Kill adb server, or it will keep listing emulators as unauthorized
+        adb kill-server
+        error The emulator is unauthorized, try reinstalling it
+    }
+
     sleep 1
 done
 
