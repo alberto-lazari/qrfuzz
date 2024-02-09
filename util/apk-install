@@ -74,7 +74,7 @@ which adb &> /dev/null || {
     trap 'kill $emulator_pid &> /dev/null' EXIT INT TERM
 }
 
-log Waiting for Android package manager to be ready
+# Wait for Android package manager to be ready
 until adb shell pm list packages &> /dev/null; do
     ! adb devices | grep -q unauthorized || {
         # Kill adb server, or it will keep listing emulators as unauthorized
@@ -109,7 +109,7 @@ for app in $apps; do
     esac
 
     ! adb shell pm list packages | grep -q $package || {
-        ok $app_name is installed
+        # App already installed, skip
         continue
     }
 

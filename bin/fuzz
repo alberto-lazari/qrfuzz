@@ -58,7 +58,11 @@ done
 [[ -n "$ANDROID_HOME" ]] ||
     export ANDROID_HOME="$HOME/Android/Sdk"
 which avdmanager &> /dev/null ||
-    export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+    export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+which adb &> /dev/null ||
+    export PATH="$ANDROID_HOME/platform-tools:$PATH"
+which emulator &> /dev/null ||
+    export PATH="$ANDROID_HOME/emulator:$PATH"
 avdmanager list avd 2> /dev/null | grep -q qrfuzz || {
     warning \`qrfuzz\` virtual device was not found
     read -p 'Do you want to run the Android SDK setup? (Y/n) ' answer >&2

@@ -86,7 +86,7 @@ const main = async () => {
         await appIns.goBackToScan(driver);
       } catch (error) {
         driver = await startDriver(10000);
-        await appIns.goToAppScanPage(driver);
+        await goToAppScanPage(driver);
       }
     }
   }
