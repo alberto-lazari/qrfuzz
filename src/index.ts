@@ -47,7 +47,7 @@ const main = async () => {
     await sleep(2000);
     await qr_writer.write(Buffer.from(qr_payload), tmp_qr);
     exec(`../util/stream ${tmp_qr}`);
-    await sleep(2000);
+    await sleep(3000);
 
     const dict = qr_status.files[qr_status.dict_idx];
     const line_idx = qr_status.line_idx;
@@ -127,7 +127,7 @@ async function goToAppScanPage(driver: WebdriverIO.Browser) {
     const msg = `[index.ts] Unable to go to the scan page (error: ${error as string})`;
     console.log(msg);
     log(data_path, msg);
-    await appIns.goBackToScan(driver);
+    await goToAppScanPage(driver);
   }
 }
 
