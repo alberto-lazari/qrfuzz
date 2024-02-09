@@ -44,10 +44,10 @@ const main = async () => {
   let qr_payload: Uint8Array | null;
   let qr_status: DictsIterStatus;
   while ((([qr_payload, qr_status] = qr_iter()), qr_payload != null)) {
-    await sleep(1000);
+    await sleep(2000);
     await qr_writer.write(Buffer.from(qr_payload), tmp_qr);
     exec(`../util/stream ${tmp_qr}`);
-    await sleep(1000);
+    await sleep(2000);
 
     const dict = qr_status.files[qr_status.dict_idx];
     const line_idx = qr_status.line_idx;
