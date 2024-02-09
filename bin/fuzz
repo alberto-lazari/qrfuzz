@@ -108,9 +108,11 @@ appium &> /tmp/appium.log \
 appium_pid=$!
 
 # Check that an emulator is running
-[[ -f /tmp/emulator.pid ]] &&
-    ps -p $(< /tmp/emulator.pid) &> /dev/null ||
-{
+if [[ -f /tmp/emulator.pid ]] &&
+    ps -p $(< /tmp/emulator.pid) &> /dev/null
+then
+    log Emulator is running with PID $(< /tmp/emulator.pid)
+else
     log Starting Android emulator
 
     if $emulator_gui; then
@@ -120,7 +122,7 @@ appium_pid=$!
         # Launch without a window
         util/launch-emulator "$device" -no-window
     fi
-}
+fi
 
 # Wait for the emulator to start and check that the app is installed
 util/apk-install $app
