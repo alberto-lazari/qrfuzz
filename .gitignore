@@ -1,8 +1,12 @@
 *.pdf
 *.apk
+*.log
 video-generation/outputs/
 
 node_modules/
 dist/
 
 .prettier*
+
+src/logs
+src/screen

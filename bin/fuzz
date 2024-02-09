@@ -2,6 +2,9 @@
 set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
+initial_qr=test/qr-examples/qr1.png
+test_dir="$(realpath src)"
+
 log () {
     echo "[[1;34m$0[0m] $@"
 }
@@ -32,9 +35,6 @@ case "$1" in
         ;;
     *)  app="$1" ;;
 esac
-
-initial_qr=test/qr-examples/qr1.png
-test_dir="$(realpath "QRFuzz/tools/QRCodeFuzzer/data-tests/$app")"
 
 # Check Android SDK status
 [[ -n "$ANDROID_HOME" ]] ||
@@ -96,9 +96,9 @@ appium_pid=$!
     log Starting Android emulator
 
     # Launch with an interactive window
-    # util/launch-emulator "$device"
+    util/launch-emulator "$device"
     # Launch without a window
-    util/launch-emulator "$device" -no-window
+    # util/launch-emulator "$device" -no-window
 }
 
 # Wait for the emulator to start and check that the app is installed
@@ -111,11 +111,11 @@ emulator="$( \
     sed 's/\(emulator-[0-9]*\).*/\1/'
 )"
 
-cd src
-
 # Create directories and files
 [[ -d "$test_dir/screen" ]] || mkdir -p "$test_dir/screen"
 [[ -d "$test_dir/logs" ]] || mkdir -p "$test_dir/logs"
+
+cd src
 
 log Starting fuzzing tests
 npx tsx index.ts "$app" "$test_dir" 4723 "$emulator" || {
