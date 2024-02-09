@@ -1,6 +1,3 @@
-[submodule "QRFuzz"]
-	path = QRFuzz
-	url = git@github.com:francescoo22/QRFuzz.git
 [submodule "test/qr-barcode-scanner"]
 	path = test/qr-barcode-scanner
 	url = git@github.com:albertolazari/qr-barcode-scanner.git
