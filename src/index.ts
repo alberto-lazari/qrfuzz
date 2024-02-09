@@ -46,7 +46,7 @@ const main = async () => {
   while ((([qr_payload, qr_status] = qr_iter()), qr_payload != null)) {
     await sleep(1000);
     await qr_writer.write(Buffer.from(qr_payload), tmp_qr);
-    exec(`../../../util/stream ${tmp_qr}`);
+    exec(`../util/stream ${tmp_qr}`);
     await sleep(1000);
 
     const dict = qr_status.files[qr_status.dict_idx];
