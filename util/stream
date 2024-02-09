@@ -6,6 +6,17 @@ device_file=/tmp/stream.device
 image_margin_left=50
 image_margin_top=210
 
+log () {
+    echo "[[1;34m$0[0m] $@"
+}
+warning () {
+    log "[[1;33mWARNING[0m] $@" >&2
+}
+error () {
+    log "[[1;31mERROR[0m] $@" >&2
+    exit 1
+}
+
 print_usage () {
     cat >&2 <<- EOF
 	usage: stream SOURCE
@@ -40,7 +51,7 @@ case "$1" in
         exit 0
         ;;
     *)
-        echo $0: \`$1\` should be an image or a video >&2
+        log \`$1\` should be an image or a video >&2
         print_usage
         exit 1
         ;;
@@ -48,10 +59,8 @@ esac
 shopt -u nocasematch
 
 # Get full source file path and check that it exists
-src="$(realpath "$1" 2> /dev/null)" && [[ -f "$src" ]] || {
-    echo $0: \`$1\` file not found >&2
-    exit 1
-}
+src="$(realpath "$1" 2> /dev/null)" && [[ -f "$src" ]] ||
+    error \`$1\` file not found
 
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
@@ -61,7 +70,7 @@ lsmod | grep -q v4l2loopback || {
 }
 
 which ffmpeg &> /dev/null || {
-    echo $0: ffmpeg is needed for the stream, but it was not found >&2
+    warning ffmpeg is needed for the stream, but it was not found
     read -p 'Do you want to install it? (Y/n) ' answer >&2
     if [[ "$answer" != [Nn] ]]; then
         setup/ffmpeg
@@ -75,10 +84,8 @@ device="$(cat "$device_file" 2> /dev/null)" ||
     # Otherwise find a device provided by v4l
     device="/dev/$(ls /sys/devices/virtual/video4linux 2> /dev/null | head -1)"
 # If the device format is not `/dev/videoN` something was wrong
-grep -q '^/dev/video[0-9]*$' <<< "$device" || {
-    echo $0: virtual webcam not found >&2
-    exit 1
-}
+grep -q '^/dev/video[0-9]*$' <<< "$device" ||
+    error Virtual webcam not found
 # Return the virtual webcam device
 echo $device > "$device_file"
 
