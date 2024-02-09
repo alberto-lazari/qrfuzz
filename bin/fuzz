@@ -19,11 +19,11 @@ error () {
 
 print_help () {
     cat >&2 <<- EOF
-	usage: fuzz [-hn] APP
-	Run fuzzing tests for APP
+	usage: fuzz [-hn] <app>
+	Run fuzzing tests for <app>
 
 	arguments:
-	  APP               the app to test
+	  <app>             the app to test
 	options:
 	  -n, --no-gui      start the emulator in headless mode (without a GUI)
 	  -h, --help        show this message

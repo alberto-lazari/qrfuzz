@@ -19,14 +19,14 @@ error () {
 
 print_usage () {
     cat >&2 <<- EOF
-	usage: stream SOURCE
+	usage: stream <source>
 	Start a video stream on v4l2loopback virtual camera
 	Use either an image (.png/.jpg) or a video (.mp4) source
 	- Returns the device \`/dev/videoN\` on which ffmpeg is streaming in \`$device_file\`
 	- Returns the stream PID in \`$pid_file\`
 
 	arguments:
-	  SOURCE        image or video file to stream (PNG|JPEG|MP4)
+	  <source>      image or video file to stream (PNG|JPEG|MP4)
 	options:
 	  -h, --help    show this message
 	EOF

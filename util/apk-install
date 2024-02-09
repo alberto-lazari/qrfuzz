@@ -20,11 +20,11 @@ ok () {
 
 print_help () {
     cat >&2 <<-EOF
-	usage: apk-install [-h] APP [...]
-	Download and install the required APP[s]
+	usage: apk-install [-h] <app> [...]
+	Download and install the required <app>[s]
 
 	arguments:
-      APP [...]     the app (or multiple apps) to install
+	  <app> [...]   the app (or multiple apps) to install
 	options:
 	  -h, --help    show this message
 	EOF

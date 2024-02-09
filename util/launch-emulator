@@ -17,25 +17,25 @@ error () {
 
 print_usage () {
     cat >&2 <<- EOF
-	usage: launch-emulator [WEBCAM_DEVICE] [EMULATOR_ARGS ...]
+	usage: launch-emulator [<webcam_device>] [<emulator_args> ...]
 	Launch an emulator instance
 	- Returns the emulator PID in \`/tmp/emulator.pid\`
 
 	arguments:
-      WEBCAM_DEVICE     path of the \`/dev/videoN\` device to use as webcam (optional)
-      EMULATOR_ARGS     additional arguments to pass to the emulator (optional)
+	  <webcam_device>   path of the \`/dev/videoN\` device to use as webcam (optional)
+	  <emulator_args>   additional arguments to pass to the emulator (optional)
 	options:
 	  -h, --help        show this message
 	EOF
 }
 
 case "$1" in
-    # Do nothing, no device was passed, only emulator options
-    -*) ;;
     -h | --help)
         print_usage
         exit
         ;;
+    # Do nothing, no device was passed, only emulator options
+    -*) ;;
     *)  device="$1"
         shift
         ;;
