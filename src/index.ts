@@ -148,20 +148,4 @@ async function checkAppRunningAndRestart(
   return driver;
 }
 
-// Handler to detect CTRL+C to exit the program
-const keypress = async () => {
-  process.stdin.setRawMode(true);
-  return new Promise<void>((resolve) =>
-    process.stdin.once("data", (data) => {
-      const byteArray = [...data];
-      if (byteArray.length > 0 && byteArray[0] === 3) {
-        console.log("[QRCodeFuzzer] Exit program");
-        process.exit(1);
-      }
-      process.stdin.setRawMode(false);
-      resolve();
-    })
-  );
-};
-
 main().catch(console.error);
