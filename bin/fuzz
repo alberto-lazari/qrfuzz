@@ -4,6 +4,7 @@ cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 initial_qr=test/qr-examples/qr1.png
 test_dir="$(realpath src)"
+emulator_gui=true
 
 log () {
     echo "[[1;34m$0[0m] $@"
@@ -18,13 +19,14 @@ error () {
 
 print_help () {
     cat >&2 <<- EOF
-	usage: fuzz [-h] APP
+	usage: fuzz [-hn] APP
 	Run fuzzing tests for APP
 
 	arguments:
-	  APP           the app to test
+	  APP               the app to test
 	options:
-	  -h, --help    show this message
+	  -n, --no-gui      start the emulator in headless mode (without a GUI)
+	  -h, --help        show this message
 	EOF
 }
 
@@ -32,13 +34,25 @@ print_help () {
     print_help
     exit 1
 }
-case "$1" in
-    -h | --help)
-        print_help
-        exit 0
-        ;;
-    *)  app="$1" ;;
-esac
+while (( $# > 0 )); do
+    case "$1" in
+        -n | --no-gui)
+            emulator_gui=false
+            shift
+            ;;
+        -h | --help)
+            print_help
+            exit 0
+            ;;
+        *)  app="$1"
+            shift
+            ;;
+    esac
+done
+[[ -n "$app" ]] || {
+    print_help
+    exit 1
+}
 
 # Check Android SDK status
 [[ -n "$ANDROID_HOME" ]] ||
@@ -99,10 +113,13 @@ appium_pid=$!
 {
     log Starting Android emulator
 
-    # Launch with an interactive window
-    util/launch-emulator "$device"
-    # Launch without a window
-    # util/launch-emulator "$device" -no-window
+    if $emulator_gui; then
+        # Launch with an interactive window
+        util/launch-emulator "$device"
+    else
+        # Launch without a window
+        util/launch-emulator "$device" -no-window
+    fi
 }
 
 # Wait for the emulator to start and check that the app is installed
