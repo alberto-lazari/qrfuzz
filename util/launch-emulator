@@ -30,14 +30,14 @@ print_usage () {
 }
 
 case "$1" in
+    # Do nothing, no device was passed, only emulator options
+    -*) ;;
     -h | --help)
         print_usage
         exit
         ;;
     *)  device="$1"
-        # Device may not be provided
-        [[ -z "$device" ]] ||
-            shift
+        shift
         ;;
 esac
 
