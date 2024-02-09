@@ -74,6 +74,14 @@ which adb &> /dev/null || {
 
 # Wait for the emulator to be ready
 adb wait-for-device
+
+! adb devices | grep unauthorized || {
+    # Kill adb server, or it will keep listing emulators as unauthorized
+    adb kill-server
+    error The emulator is unauthorized, try reinstalling it
+}
+
+log Waiting for Android package manager to be ready
 until adb shell pm list packages &> /dev/null; do
     sleep 1
 done

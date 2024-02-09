@@ -4,6 +4,9 @@ set -e
 log () {
     echo "[[1;34m$0[0m] $@"
 }
+warning () {
+    log "[[1;33mWARNING[0m] $@" >&2
+}
 error () {
     log "[[1;31mERROR[0m] $@" >&2
     exit 1
@@ -68,6 +71,8 @@ esac
         mkdir -p "$ANDROID_HOME/cmdline-tools"
 
     which unzip &> /dev/null || {
+        warning unzip command not found, but it is needed to extract $out
+        log Installing unzip using your package manager
         # Debian-based
         if which apt &> /dev/null; then
             log 'Running: sudo apt update && sudo apt install unzip'

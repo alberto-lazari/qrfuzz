@@ -13,7 +13,7 @@ ok () {
 # Set Android SDK variables
 [[ -n "$ANDROID_HOME" ]] ||
     export ANDROID_HOME="$HOME/Android/Sdk"
-which sdkmanager &> /dev/null ||
+which avdmanager &> /dev/null ||
     export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
 
 # The setup will be triggered when either the SDK or the virtual device are not present

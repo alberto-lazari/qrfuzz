@@ -13,11 +13,17 @@ log () {
 which appium &> /dev/null || {
     log Installing dependency: Appium
     setup/appium
+
+    # NVM could be installed in Appium's setup and needs to be loaded
+    [[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
+    [[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
 }
 
 which tsc &> /dev/null || {
     log Installing dependency: TypeScript
-    npm install -g typescript
+    npm install -g typescript ||
+        # Might need root access
+        sudo npm install -g typescript
 }
 
 ! npm list 2> /dev/null | grep -q 'UNMET DEPENDENCY' || {
