@@ -38,7 +38,7 @@ const _opts = _appIns.then((appIns) => ({
     "appium:autoGrantPermissions": "true",
     // "appium:noReset": "true"
   },
-  // logLevel: "warn",
+  logLevel: "warn",
 }));
 
 const tmp_qr = "/tmp/qr_code.png";
@@ -116,16 +116,16 @@ const main = async () => {
         saveLogcat(appIns, data_path, name + ".log", driver),
         saveScreenshot(data_path, name + ".png", driver),
       ]);
-
-      try {
-        await appIns.goBackToScan(driver);
-      } catch (error) {
-        driver = await startDriver(10000);
-        await goToAppScanPage(driver);
-      }
     }
 
     await saveState(qr_status);
+
+    try {
+      await appIns.goBackToScan(driver);
+    } catch (error) {
+      driver = await startDriver(10000);
+      await goToAppScanPage(driver);
+    }
   }
 
   await driver.deleteSession();
