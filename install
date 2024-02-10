@@ -2,13 +2,7 @@
 set -e
 cd "$(dirname "$BASH_SOURCE")"
 
-log () {
-    echo "[[1;34m$0[0m] $@"
-}
-
-ok () {
-    echo "[[1;32mOK[0m] $@"
-}
+. lib/log.sh
 
 # Set Android SDK variables
 [[ -n "$ANDROID_HOME" ]] ||

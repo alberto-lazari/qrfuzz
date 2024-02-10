@@ -2,9 +2,7 @@
 set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
-log () {
-    echo "[[1;34m$0[0m] $@"
-}
+. lib/log.sh
 
 which nvm &> /dev/null || {
     log Installing NVM

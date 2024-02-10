@@ -1,15 +1,14 @@
 #!/bin/bash
 set -e
+cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
-log () {
-    echo "[[1;34m$0[0m] $@"
-}
+. lib/log.sh
 
 log 'Loading `v4l2loopback` kernel module (requires password)'
 # Just load it if already installed
 ! sudo modprobe v4l2loopback 2> /dev/null || exit 0
 
-log Module not found, proceeding with installation
+warning Module not found, proceeding with installation
 
 dir=/tmp/v4l2loopback-repo
 [[ ! -d "$dir" ]] || rm -rf "$dir"
@@ -19,10 +18,12 @@ git clone -q https://github.com/umlaeute/v4l2loopback "$dir"
 
 # Install
 log Installing
-cd "$dir"
-make > /dev/null
-sudo make install &> /dev/null
-sudo depmod -a
+(
+    cd "$dir"
+    make > /dev/null
+    sudo make install &> /dev/null
+    sudo depmod -a
+)
 
 # Load module
 log 'Loading kernel module `v4l2loopback`'

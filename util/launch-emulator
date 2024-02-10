@@ -2,18 +2,9 @@
 set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
-pid_file=/tmp/emulator.pid
+. lib/log.sh
 
-log () {
-    echo "[[1;34m$0[0m] $@"
-}
-warning () {
-    log "[[1;33mWARNING[0m] $@" >&2
-}
-error () {
-    log "[[1;31mERROR[0m] $@" >&2
-    exit 1
-}
+pid_file=/tmp/emulator.pid
 
 print_usage () {
     cat >&2 <<- EOF

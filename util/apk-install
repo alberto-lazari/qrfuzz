@@ -2,23 +2,11 @@
 set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
+. lib/log.sh
+
 apk_directory=test/apks
 
-log () {
-    echo "[[1;34m$0[0m] $@"
-}
-warning () {
-    log "[[1;33mWARNING[0m] $@" >&2
-}
-error () {
-    log "[[1;31mERROR[0m] $@" >&2
-    exit 1
-}
-ok () {
-    log "[[1;32mOK[0m] $@"
-}
-
-print_help () {
+print_usage () {
     cat >&2 <<-EOF
 	usage: apk-install [-h] <app> [...]
 	Download and install the required <app>[s]
@@ -31,13 +19,13 @@ print_help () {
 }
 
 [[ -n "$1" ]] || {
-    print_help
+    print_usage
     exit 1
 }
 
 case "$1" in
     -h | --help)
-        print_help
+        print_usage
         exit 0
         ;;
     *)  apps="$@" ;;

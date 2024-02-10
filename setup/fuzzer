@@ -2,9 +2,7 @@
 set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
-log () {
-    echo "[[1;34m$0[0m] $@"
-}
+. lib/log.sh
 
 # NVM might need its environment
 [[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"

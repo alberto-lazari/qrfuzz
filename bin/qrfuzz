@@ -2,21 +2,12 @@
 set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
+. lib/log.sh
+
 initial_qr=test/qr-examples/qr1.png
 emulator_gui=true
 
-log () {
-    echo "[[1;34m$0[0m] $@"
-}
-warning () {
-    log "[[1;33mWARNING[0m] $@" >&2
-}
-error () {
-    log "[[1;31mERROR[0m] $@" >&2
-    exit 1
-}
-
-print_help () {
+print_usage () {
     cat >&2 <<- EOF
 	usage: qrfuzz [-hn] <app>
 	Run fuzzing tests for <app>
@@ -30,7 +21,7 @@ print_help () {
 }
 
 [[ -n "$1" ]] || {
-    print_help
+    print_usage
     exit 1
 }
 while (( $# > 0 )); do
@@ -40,7 +31,7 @@ while (( $# > 0 )); do
             shift
             ;;
         -h | --help)
-            print_help
+            print_usage
             exit 0
             ;;
         *)  app="$1"
@@ -49,7 +40,7 @@ while (( $# > 0 )); do
     esac
 done
 [[ -n "$app" ]] || {
-    print_help
+    print_usage
     exit 1
 }
 
