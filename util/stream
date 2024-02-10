@@ -2,6 +2,7 @@
 set -e
 
 . lib/log.sh
+. lib/dependencies.sh
 
 pid_file=/tmp/stream.pid
 device_file=/tmp/stream.device
@@ -55,20 +56,7 @@ src="$(realpath "$1" 2> /dev/null)" && [[ -f "$src" ]] ||
 
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
-# Enable dummy camera
-lsmod | grep -q v4l2loopback || {
-    setup/v4l2loopback
-}
-
-which ffmpeg &> /dev/null || {
-    warning ffmpeg is needed for the stream, but it was not found
-    read -p 'Do you want to install it? (Y/n) ' answer >&2
-    if [[ "$answer" != [Nn] ]]; then
-        setup/ffmpeg
-    else
-        exit 1
-    fi
-}
+require v4l2loopback ffmpeg
 
 # Find virtual camera device from a previously saved one
 device="$(cat "$device_file" 2> /dev/null)" ||
@@ -76,13 +64,13 @@ device="$(cat "$device_file" 2> /dev/null)" ||
     device="/dev/$(ls /sys/devices/virtual/video4linux 2> /dev/null | head -1)"
 # If the device format is not `/dev/videoN` something was wrong
 grep -q '^/dev/video[0-9]*$' <<< "$device" ||
-    error Virtual webcam not found
+    error Could not find the virtual webcam
 # Return the virtual webcam device
 echo $device > "$device_file"
 
 # Close the currently running stream, if any
-if [[ -f "$pid_file" ]] && ps -p $(cat "$pid_file") &> /dev/null; then
-    kill $(cat "$pid_file")
+if [[ -f "$pid_file" ]] && ps -p $(< "$pid_file") &> /dev/null; then
+    kill $(< "$pid_file")
 fi
 
 # Start video stream to virtual webcam

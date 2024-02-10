@@ -12,14 +12,14 @@ else
     setup/android-sdk
 fi
 
-if lsmod | grep -q v4l2loopback; then
+if check v4l2loopback; then
     ok '`v4l2loopback` kernel module already loaded'
 else
     log 'Installing `v4l2loopback` kernel module'
     setup/v4l2loopback
 fi
 
-if which ffmpeg &> /dev/null; then
+if check ffmpeg; then
     ok ffmpeg already installed
 else
     log Installing FFmpeg
