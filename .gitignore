@@ -9,3 +9,4 @@ dist/
 .prettier*
 
 data-tests/
+src/inspectors/credentials.json
