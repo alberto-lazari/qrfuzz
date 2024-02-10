@@ -114,7 +114,10 @@ export const getState = async (
 };
 
 export const saveState = async (status: DictsIterStatus) => {
-  await writeFile(resolve(data_path(), STATE_FILE), JSON.stringify(status));
+  await writeFile(
+    resolve(data_path(), STATE_FILE),
+    JSON.stringify(status, undefined, 2)
+  );
 };
 
 export const dicts_iterator = async (app: string, files: string[]) => {
