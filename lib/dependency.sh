@@ -47,7 +47,7 @@ check () {
         ;;
     nvm)
         check nvm_env &&
-            which nvm &> /dev/null ||
+            type nvm &> /dev/null ||
             return 1
         ;;
     nodejs)
