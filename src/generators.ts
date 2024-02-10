@@ -3,86 +3,109 @@
  */
 
 import { AppId } from "./apps";
-import { ExpandRecursively } from "./utils";
 
-type Builder = (payload: string) => string;
+type Builder = (payload: Uint8Array) => Uint8Array;
 
 type T = {
   standard: Builder;
 } & Partial<Record<AppId, Builder>>;
 
-export const generators: ExpandRecursively<T> = {
+const concat = (...arr: (Uint8Array | string)[]): Uint8Array =>
+  Buffer.concat(
+    arr.map((v) => {
+      if (typeof v === "string") {
+        return new TextEncoder().encode(v);
+      } else {
+        return v;
+      }
+    })
+  );
+
+export const generators: T = {
   standard: (
-    payload: string, // This is for standard tests
+    payload // This is for standard tests
   ) => payload,
 
-  wallpop: (payload: string) => payload,
+  wallpop: (payload) => payload,
 
-  posteid: (payload: string) =>
-    "https://secureholder.mobile.poste.it/jod-secure-holder/qrcodeResolver/" +
-    payload,
+  posteid: (payload) =>
+    concat(
+      "https://secureholder.mobile.poste.it/jod-secure-holder/qrcodeResolver/",
+      payload
+    ),
 
-  satispay: (payload: string) => payload,
-  //  "https://www.satispay.com/app/pay/shops/" + payload + "?amount=1"
+  satispay: (payload) => payload,
+  // concat("https://www.satispay.com/app/pay/shops/", payload, "?amount=1")
 
-  tiktok: (payload: string) => payload, // "https://vm.tiktok.com/" + payload
+  tiktok: (payload) => payload, // concat("https://vm.tiktok.com/", payload)
 
-  telegram: (payload: string) => "tg://login?token=" + payload,
+  telegram: (payload) => concat("tg://login?token=", payload),
 
-  zoom: (payload: string) => payload, // The QR code simply contain the meeting's invitation URL
+  zoom: (payload) => payload, // The QR code simply contain the meeting's invitation URL
 
-  qrbarcodereader: (payload: string) => payload,
+  qrbarcodereader: (payload) => payload,
 
-  io: (payload: string) => payload,
+  io: (payload) => payload,
 
-  shein: (payload: string) =>
-    "https://shein.onelink.me/" + payload + "?af_force_deeplink=true",
+  shein: (payload) =>
+    concat("https://shein.onelink.me/", payload, "?af_force_deeplink=true"),
 
-  ridemovi: (payload: string) =>
+  ridemovi: (payload) =>
     // example of correct payload: http://ridemovi.com/?bn=IB12A00232&p=1
-    "http://ridemovi.com/?bn=" + payload + "&p=1",
+    concat("http://ridemovi.com/?bn=", payload, "&p=1"),
 
-  instagram: (payload: string) => payload, // "http://instagram.com/" + payload + "?utm_source=qr"
+  instagram: (payload) => payload, // concat("http://instagram.com/", payload, "?utm_source=qr")
 
-  instagram260: (payload: string) =>
-    "http://instagram.com/" + payload + "?utm_source=qr",
+  instagram260: (payload) =>
+    concat("http://instagram.com/", payload, "?utm_source=qr"),
 
-  whatsapp: (payload: string) =>
+  whatsapp: (payload) =>
     // TODO: encode payload? reverse eng. needed here - F
     payload,
 
-  snapchat: (payload: string) => payload, // FIXME: proprietary QR code (?) - F
+  snapchat: (payload) => payload, // FIXME: proprietary QR code (?) - F
 
-  paypal: (payload: string) =>
-    "https://www.paypal.com/qrcodes/managed/" +
-    payload +
-    "?utm_source=consweb_more",
+  paypal: (payload) =>
+    concat(
+      "https://www.paypal.com/qrcodes/managed/",
+      payload,
+      "?utm_source=consweb_more"
+    ),
 
-  twitter: (payload: string) => payload, // "https://twitter.com/" + payload
+  twitter: (payload) => payload, // concat("https://twitter.com/", payload)
 
-  discord: (payload: string) => "https://discord.gg/" + payload,
+  discord: (payload) => concat("https://discord.gg/", payload),
 
-  ebay: (payload: string) => "https://ebay.com/str/" + payload,
+  ebay: (payload) => concat("https://ebay.com/str/", payload),
 
-  postepay: (payload: string) => payload, // "https://ppayapp.mobile.poste.it/jod-mobile-server/qrcs/bp/access/v1/?clusterID=1&tranId=" + payload
+  postepay: (payload) => payload, // concat("https://ppayapp.mobile.poste.it/jod-mobile-server/qrcs/bp/access/v1/?clusterID=1&tranId=", payload)
 
-  bancoposta: (payload: string) => payload, // "https://ppayapp.mobile.poste.it/jod-mobile-server/qrcs/bp/access/v1/?clusterID=1&tranId=" + payload
+  bancoposta: (payload) => payload, // concat("https://ppayapp.mobile.poste.it/jod-mobile-server/qrcs/bp/access/v1/?clusterID=1&tranId=", payload)
 
-  ucbrowser: (payload: string) => payload,
+  ucbrowser: (payload) => payload,
 
-  broadlink: (payload: string) => payload,
+  broadlink: (payload) => payload,
 
-  chrome: (payload: string) => payload,
+  chrome: (payload) => payload,
 
-  facebook: (payload: string) => "https://facebook.com/qr?id=" + payload,
+  facebook: (payload) => concat("https://facebook.com/qr?id=", payload),
 
-  messages: (payload: string) =>
-    "https://support.google.com/messages/?p=web_computer//?c=" + payload,
+  messages: (payload) =>
+    concat("https://support.google.com/messages/?p=web_computer//?c=", payload),
 
   // TODO
-  //  verificac19: (payload: string) => ...,
+  //  verificac19: (payload) => ...,
 
-  line: (payload: string) => payload, // "https://line.me/R/ti/g/"+payload
+  line: (payload) => payload, // concat("https://line.me/R/ti/g/", payload)
+};
+
+export const get_generator = (app: string) => {
+  const generator = generators[app as AppId];
+  if (generator !== undefined) {
+    return generator;
+  } else {
+    return generators.standard;
+  }
 };
 
 export default generators;

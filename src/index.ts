@@ -10,6 +10,7 @@ import {
 import { log, saveLogcat, saveScreenshot } from "./logger";
 import sleep from "./sleep";
 import { exec } from "child_process";
+import { get_generator } from "./generators";
 
 loader.checkArguments();
 const app_id = loader.app_name();
@@ -42,6 +43,8 @@ const main = async () => {
 
   await goToAppScanPage(driver);
 
+  const generator = get_generator(app_id);
+
   // by default fuzz all
   const files = (await list_dicts()).map((dict) => dict.fullname);
   const qr_iter = await dicts_iterator(app_id, files);
@@ -51,7 +54,7 @@ const main = async () => {
   let qr_status: DictsIterStatus;
   while ((([qr_payload, qr_status] = qr_iter()), qr_payload != null)) {
     await sleep(2000);
-    await qr_writer.write(Buffer.from(qr_payload), tmp_qr);
+    await qr_writer.write(generator(qr_payload), tmp_qr);
     exec(`../util/stream ${tmp_qr}`);
     await sleep(3000);
 

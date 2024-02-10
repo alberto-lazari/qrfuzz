@@ -1,7 +1,7 @@
 /* NOTE: to extend the program:
  * - add here the app id
- * - add an optional data builder in src/data_builder.ts
- * - add a driver in // TODO
+ * - add a driver in src/inspectors.ts
+ * - add an optional data builder in src/generators.ts
  */
 
 const apps = [
