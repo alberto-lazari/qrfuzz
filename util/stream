@@ -50,13 +50,13 @@ case "$1" in
 esac
 shopt -u nocasematch
 
+require v4l2loopback ffmpeg
+
 # Get full source file path and check that it exists
 src="$(realpath "$1" 2> /dev/null)" && [[ -f "$src" ]] ||
     error \`$1\` file not found
 
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
-
-require v4l2loopback ffmpeg
 
 # Find virtual camera device from a previously saved one
 device="$(cat "$device_file" 2> /dev/null)" ||

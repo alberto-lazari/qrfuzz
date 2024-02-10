@@ -3,28 +3,18 @@ set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 . lib/log.sh
+. lib/dependencies.sh
 
-# NVM might need its environment
-[[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
-[[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
+require nodejs
 
-which npm &> /dev/null || {
-    log Installing dependency: Node.js
-    setup/nodejs
-
-    # Need to load the environment after install
-    [[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
-    [[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
-}
-
-which appium &> /dev/null || {
+check appium || {
     log Installing Appium
     npm install -g appium ||
         # Might need root access
         sudo npm install -g appium
 }
 
-appium driver list --installed 2>&1 | grep -q uiautomator2 || {
+check appium || {
     log Installing \`uiautomator2\` driver
     appium driver install uiautomator2
 }

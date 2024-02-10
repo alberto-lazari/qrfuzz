@@ -4,6 +4,8 @@ check () {
     local lib="$(realpath "$(dirname "$BASH_SOURCE")")"
     . "$lib/log.sh"
 
+    cd "$lib/.."
+
     while (( $# > 0 )); do
     case "$1" in
     android_sdk)
@@ -35,6 +37,32 @@ check () {
         ;;
     ffmpeg)
         which ffmpeg &> /dev/null ||
+            return 1
+        ;;
+    nvm_env)
+        [[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
+        [[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
+        ;;
+    nvm)
+        check nvm_env
+        which nvm &> /dev/null ||
+            return 1
+        ;;
+    nodejs)
+        check nvm_env
+        which npm &> /dev/null ||
+            return 1
+        ;;
+    appium)
+        check nodejs &&
+            # Will fail when either the driver or appium itself are missing
+            appium driver list --installed 2>&1 |
+            grep -q uiautomator2 ||
+            return 1
+        ;;
+    fuzzer)
+        check appium &&
+            ! npm list 2> /dev/null | grep -q 'UNMET DEPENDENCY' ||
             return 1
         ;;
     *)
@@ -99,7 +127,39 @@ setup () {
         if [[ "$answer" != [Nn] ]]; then
             setup/ffmpeg
         else
-            exit 1
+            return 1
+        fi
+        ;;
+    nvm | nvm_env)
+        warning 'NVM was not found, but it is necessary to manage Node.js'
+        local answer
+        read -p 'Do you want to install it? (Y/n) ' answer >&2
+        if [[ "$answer" != [Nn] ]]; then
+            setup/nvm
+            check nvm_env
+        else
+            return 1
+        fi
+        ;;
+    nodejs)
+        log Installing dependency: Node.js
+        setup/nodejs
+        check nvm_env
+        ;;
+    appium)
+        log Installing dependency: Appium
+        setup/appium
+        check nvm_env
+        ;;
+    fuzzer)
+        warning Fuzzer not found
+        local answer
+        read -p 'Do you want to install it? (Y/n) ' answer >&2
+        if [[ "$answer" != [Nn] ]]; then
+            setup/fuzzer
+            check nvm_env
+        else
+            return 1
         fi
         ;;
     *)

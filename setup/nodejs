@@ -3,15 +3,11 @@ set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 . lib/log.sh
+. lib/dependencies.sh
 
-which nvm &> /dev/null || {
-    log Installing NVM
-    curl "https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh" |
-        bash
+require nvm
 
-    export NVM_DIR="$HOME/.nvm"
-    [[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
+check nodejs || {
+    log Installing Node.js using NVM
+    nvm install --lts
 }
-
-log Installing Node.js using NVM
-nvm install --lts

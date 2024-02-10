@@ -5,8 +5,6 @@ cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 . lib/log.sh
 . lib/dependencies.sh
 
-require android_sdk avd
-
 initial_qr=test/qr-examples/qr1.png
 emulator_gui=true
 
@@ -47,23 +45,9 @@ done
     exit 1
 }
 
-test_dir="$PWD/data-tests/$app"
+require android_sdk fuzzer
 
-# Check fuzzer status
-[[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
-[[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
-which npm &> /dev/null &&
-    ! npm list 2> /dev/null |
-    grep -q 'UNMET DEPENDENCY' ||
-{
-    warning Fuzzer not found
-    read -p 'Do you want to install it? (Y/n) ' answer >&2
-    if [[ "$answer" != [Nn] ]]; then
-        setup/fuzzer
-    else
-        exit 1
-    fi
-}
+test_dir="$PWD/data-tests/$app"
 
 # Automatically kill the background services on exit
 trap 'kill $stream_pid $appium_pid &> /dev/null' EXIT INT TERM

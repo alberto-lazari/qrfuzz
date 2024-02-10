@@ -3,19 +3,9 @@ set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 . lib/log.sh
+. lib/dependencies.sh
 
-# NVM might need its environment
-[[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
-[[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
-
-which appium &> /dev/null || {
-    log Installing dependency: Appium
-    setup/appium
-
-    # NVM could be installed in Appium's setup and needs to be loaded
-    [[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
-    [[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
-}
+require appium
 
 which tsc &> /dev/null || {
     log Installing dependency: TypeScript
@@ -24,7 +14,7 @@ which tsc &> /dev/null || {
         sudo npm install -g typescript
 }
 
-! npm list 2> /dev/null | grep -q 'UNMET DEPENDENCY' || {
+check fuzzer || {
     log Installing fuzzer
     npm install
 }

@@ -26,10 +26,7 @@ else
     setup/ffmpeg
 fi
 
-[[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
-[[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
-
-if which npm &> /dev/null; then
+if check nodejs; then
     ok Node.js already installed
 else
     log Installing Node.js
@@ -37,18 +34,14 @@ else
 fi
 
 # The setup will be triggered when either the driver or appium itself are missing
-if appium driver list --installed 2>&1 |
-    grep -q uiautomator2
-then
+if check appium; then
     ok Appium already installed
 else
     log Installing Appium
     setup/appium
 fi
 
-if ! npm list 2> /dev/null |
-    grep -q 'UNMET DEPENDENCY'
-then
+if check fuzzer; then
     ok Fuzzer already installed
 else
     log Installing fuzzer
