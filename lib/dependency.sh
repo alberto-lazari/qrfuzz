@@ -46,13 +46,13 @@ check () {
             return 1
         ;;
     nvm)
-        check nvm_env
-        which nvm &> /dev/null ||
+        check nvm_env &&
+            which nvm &> /dev/null ||
             return 1
         ;;
     nodejs)
-        check nvm_env
-        which npm &> /dev/null ||
+        check nvm_env &&
+            which npm &> /dev/null ||
             return 1
         ;;
     appium)
