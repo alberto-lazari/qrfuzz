@@ -9,7 +9,9 @@ import {
 } from "./dictionary.js";
 import { log, saveLogcat, saveScreenshot } from "./logger";
 import sleep from "./sleep";
-import { exec } from "child_process";
+import { exec as _exec } from "child_process";
+import { promisify } from "util";
+const exec = promisify(_exec);
 import { get_generator } from "./generators";
 
 loader.checkArguments();
@@ -27,6 +29,7 @@ const _opts = _appIns.then((appIns) => ({
     "appium:autoGrantPermissions": "true",
     // "appium:noReset": "true"
   },
+  // logLevel: "warn",
 }));
 
 const tmp_qr = "/tmp/qr_code.png";
@@ -54,8 +57,17 @@ const main = async () => {
   let qr_status: DictsIterStatus;
   while ((([qr_payload, qr_status] = qr_iter()), qr_payload != null)) {
     await sleep(2000);
-    await qr_writer.write(generator(qr_payload), tmp_qr);
-    exec(`../util/stream ${tmp_qr}`);
+    const qr_content = generator(qr_payload);
+    await qr_writer.write(qr_content, tmp_qr);
+    {
+      const { stdout, stderr } = await exec(`../util/stream ${tmp_qr}`);
+      if (stdout !== "") {
+        console.log(stdout);
+      }
+      if (stderr !== "") {
+        console.error(stderr);
+      }
+    }
     await sleep(3000);
 
     const dict = qr_status.files[qr_status.dict_idx];
