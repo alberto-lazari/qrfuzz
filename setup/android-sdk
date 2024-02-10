@@ -3,6 +3,7 @@ set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 . lib/log.sh
+. lib/pkg.sh
 
 # Name of the emulated Android device
 device=qrfuzz
@@ -46,23 +47,7 @@ esac
 
     which unzip &> /dev/null || {
         warning unzip command not found, but it is needed to extract $out
-        log Installing unzip using your package manager
-        # Debian-based
-        if which apt &> /dev/null; then
-            log 'Running: sudo apt update && sudo apt install unzip'
-            sudo apt update
-            sudo apt install unzip
-        # Arch-based
-        elif which pacman &> /dev/null; then
-            log 'Running: sudo pacman -S unzip'
-            sudo pacman -S unzip
-        # RHEL-based
-        elif which dnf &> /dev/null; then
-            log 'Running: sudo dnf install unzip'
-            sudo dnf install unzip
-        else
-            error No supported package manager was found
-        fi
+        pkg_install unzip
     }
 
     log Extracting $out
@@ -77,23 +62,10 @@ which sdkmanager &> /dev/null ||
 # sdkmanager crashes if no java runtime is installed
 sdkmanager --version &> /dev/null || {
     log Installing dependency: Java Runtime
-
-    # Debian-based
-    if which apt &> /dev/null; then
-        log 'Running: sudo apt update && sudo apt install openjdk-17-jdk openjdk-17-jre'
-        sudo apt update
-        sudo apt install openjdk-17-jdk openjdk-17-jre
-    # Arch-based
-    elif which pacman &> /dev/null; then
-        log 'Running: sudo pacman -S jdk-openjdk'
-        sudo pacman -S jdk-openjdk
-    # RHEL-based
-    elif which dnf &> /dev/null; then
-        log 'Running: sudo dnf install java-17-openjdk'
-        sudo dnf install java-17-openjdk
-    else
-        error No supported package manager was found
-    fi
+    pkg_install \
+        -a 'openjdk-17-jdk openjdk-17-jre' \
+        -p jdk-openjdk \
+        -d java-17-openjdk
 }
 
 sdkmanager --list_installed |

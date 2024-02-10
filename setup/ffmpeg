@@ -3,20 +3,6 @@ set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 . lib/log.sh
+. lib/pkg.sh
 
-# Debian-based
-if which apt &> /dev/null; then
-    log 'Running: sudo apt update && sudo apt install ffmpeg'
-    sudo apt update
-    sudo apt install ffmpeg
-# Arch-based
-elif which pacman &> /dev/null; then
-    log 'Running: sudo pacman -S ffmpeg'
-    sudo pacman -S ffmpeg
-# RHEL-based
-elif which dnf &> /dev/null; then
-    log 'Running: sudo dnf install ffmpeg'
-    sudo dnf install ffmpeg
-else
-    error No supported package manager was found
-fi
+pkg_install ffmpeg
