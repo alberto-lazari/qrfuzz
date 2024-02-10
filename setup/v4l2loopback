@@ -8,7 +8,10 @@ log 'Loading `v4l2loopback` kernel module (requires password)'
 # Just load it if already installed
 ! sudo modprobe v4l2loopback 2> /dev/null || exit 0
 
-warning Module not found, proceeding with installation
+warning Module not found
+read -p 'Do you want to install it? (Y/n) ' answer >&2
+[[ "$answer" != [Nn] ]] ||
+    exit 1
 
 dir=/tmp/v4l2loopback-repo
 [[ ! -d "$dir" ]] || rm -rf "$dir"
