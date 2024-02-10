@@ -3,7 +3,7 @@ set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 . lib/log.sh
-. lib/dependencies.sh
+. lib/dependency.sh
 
 initial_qr=test/qr-examples/qr1.png
 emulator_gui=true

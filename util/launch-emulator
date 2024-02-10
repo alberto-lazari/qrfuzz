@@ -3,7 +3,7 @@ set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 . lib/log.sh
-. lib/dependencies.sh
+. lib/dependency.sh
 
 pid_file=/tmp/emulator.pid
 

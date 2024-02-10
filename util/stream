@@ -2,7 +2,7 @@
 set -e
 
 . lib/log.sh
-. lib/dependencies.sh
+. lib/dependency.sh
 
 pid_file=/tmp/stream.pid
 device_file=/tmp/stream.device

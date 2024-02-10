@@ -3,7 +3,7 @@ set -e
 cd "$(dirname "$BASH_SOURCE")"
 
 . lib/log.sh
-. lib/dependencies.sh
+. lib/dependency.sh
 
 if check android_sdk avd; then
     ok Android SDK already installed

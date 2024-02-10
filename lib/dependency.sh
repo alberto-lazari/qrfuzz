@@ -58,7 +58,7 @@ check () {
             ! npm list 2> /dev/null | grep -q 'UNMET DEPENDENCY'
         ;;
     *)
-        error lib/dependencies.sh: dependency $1 not configured ;;
+        error lib/dependency.sh: dependency $1 not configured ;;
     esac
 
     shift
@@ -155,7 +155,7 @@ setup () {
         fi
         ;;
     *)
-        error lib/dependencies.sh: dependency $1 not configured ;;
+        error lib/dependency.sh: dependency $1 not configured ;;
     esac
 
     shift
