@@ -3,56 +3,54 @@ set -e
 cd "$(dirname "$BASH_SOURCE")"
 
 . lib/log.sh
+. lib/dependencies.sh
 
-# Set Android SDK variables
-[[ -n "$ANDROID_HOME" ]] ||
-    export ANDROID_HOME="$HOME/Android/Sdk"
-which avdmanager &> /dev/null ||
-    export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
-
-# The setup will be triggered when either the SDK or the virtual device are not present
-if ! avdmanager list avd 2> /dev/null | grep -q qrfuzz; then
+if check android_sdk avd; then
+    ok Android SDK already installed
+else
     log Installing Android SDK in $ANDROID_HOME
     setup/android-sdk
-else
-    ok Android SDK already installed
 fi
 
-if ! lsmod | grep -q v4l2loopback; then
+if lsmod | grep -q v4l2loopback; then
+    ok '`v4l2loopback` kernel module already loaded'
+else
     log 'Installing `v4l2loopback` kernel module'
     setup/v4l2loopback
-else
-    ok '`v4l2loopback` kernel module already loaded'
 fi
 
-if ! which ffmpeg &> /dev/null; then
+if which ffmpeg &> /dev/null; then
+    ok ffmpeg already installed
+else
     log Installing FFmpeg
     setup/ffmpeg
-else
-    ok ffmpeg already installed
 fi
 
 [[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
 [[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
 
-if ! which npm &> /dev/null; then
+if which npm &> /dev/null; then
+    ok Node.js already installed
+else
     log Installing Node.js
     setup/nodejs
-else
-    ok Node.js already installed
 fi
 
 # The setup will be triggered when either the driver or appium itself are missing
-if ! appium driver list --installed 2>&1 | grep -q uiautomator2; then
+if appium driver list --installed 2>&1 |
+    grep -q uiautomator2
+then
+    ok Appium already installed
+else
     log Installing Appium
     setup/appium
-else
-    ok Appium already installed
 fi
 
-if npm list 2> /dev/null | grep -q 'UNMET DEPENDENCY'; then
+if ! npm list 2> /dev/null |
+    grep -q 'UNMET DEPENDENCY'
+then
+    ok Fuzzer already installed
+else
     log Installing fuzzer
     setup/fuzzer
-else
-    ok Fuzzer already installed
 fi

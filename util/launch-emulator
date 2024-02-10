@@ -3,6 +3,9 @@ set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 . lib/log.sh
+. lib/dependencies.sh
+
+require android_sdk avd
 
 pid_file=/tmp/emulator.pid
 
@@ -41,24 +44,6 @@ if [[ -f "$pid_file" ]] && ps -p $(cat "$pid_file") &> /dev/null; then
     warning An emulator instance is already running
     exit 0
 fi
-
-[[ -n "$ANDROID_HOME" ]] ||
-    export ANDROID_HOME="$HOME/Android/Sdk"
-which emulator &> /dev/null ||
-    export PATH="$ANDROID_HOME/emulator:$PATH"
-
-which emulator &> /dev/null || {
-    cat >&2 <<- EOF
-	Android SDK not found
-	It is expected to be in \$ANDROID_HOME: ${ANDROID_HOME/$HOME/\~}
-	EOF
-    read -p 'Do you want to install it? (Y/n) ' answer >&2
-    if [[ "$answer" != [Nn] ]]; then
-        setup/android-sdk
-    else
-        exit 1
-    fi
-}
 
 [[ -z "$device" ]] || {
     # Get webcam name from emulator

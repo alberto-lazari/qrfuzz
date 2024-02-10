@@ -3,6 +3,9 @@ set -e
 cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 . lib/log.sh
+. lib/dependencies.sh
+
+require android_sdk avd
 
 initial_qr=test/qr-examples/qr1.png
 emulator_gui=true
@@ -45,25 +48,6 @@ done
 }
 
 test_dir="$PWD/data-tests/$app"
-
-# Check Android SDK status
-[[ -n "$ANDROID_HOME" ]] ||
-    export ANDROID_HOME="$HOME/Android/Sdk"
-which avdmanager &> /dev/null ||
-    export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
-which adb &> /dev/null ||
-    export PATH="$ANDROID_HOME/platform-tools:$PATH"
-which emulator &> /dev/null ||
-    export PATH="$ANDROID_HOME/emulator:$PATH"
-avdmanager list avd 2> /dev/null | grep -q qrfuzz || {
-    warning \`qrfuzz\` virtual device was not found
-    read -p 'Do you want to run the Android SDK setup? (Y/n) ' answer >&2
-    if [[ "$answer" != [Nn] ]]; then
-        setup/android-sdk
-    else
-        exit 1
-    fi
-}
 
 # Check fuzzer status
 [[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
