@@ -9,10 +9,19 @@ import {
 } from "./dictionary.js";
 import { log, saveLogcat, saveScreenshot } from "./logger";
 import sleep from "./sleep";
+import { get_generator } from "./generators";
+
 import { exec as _exec } from "child_process";
 import { promisify } from "util";
-const exec = promisify(_exec);
-import { get_generator } from "./generators";
+const exec = async (s: string) =>
+  await promisify(_exec)(s).then(({ stdout, stderr }) => {
+    if (stdout !== "") {
+      console.log(stdout);
+    }
+    if (stderr !== "") {
+      console.error(stderr);
+    }
+  });
 
 loader.checkArguments();
 const app_id = loader.app_name();
@@ -56,23 +65,28 @@ const main = async () => {
   let qr_payload: Uint8Array | null;
   let qr_status: DictsIterStatus;
   while ((([qr_payload, qr_status] = qr_iter()), qr_payload != null)) {
-    await sleep(2000);
-    const qr_content = generator(qr_payload);
-    await qr_writer.write(qr_content, tmp_qr);
-    {
-      const { stdout, stderr } = await exec(`../util/stream ${tmp_qr}`);
-      if (stdout !== "") {
-        console.log(stdout);
-      }
-      if (stderr !== "") {
-        console.error(stderr);
-      }
-    }
-    await sleep(3000);
-
     const dict = qr_status.files[qr_status.dict_idx];
     const line_idx = qr_status.line_idx;
     const name = `${dict}-${line_idx}`;
+
+    await sleep(2000);
+    const qr_content = generator(qr_payload);
+    const OK = Symbol("ok");
+    const qr_ok = await qr_writer
+      .write(qr_content, tmp_qr)
+      .then(() => OK)
+      .catch((e: Error) => e);
+    if (qr_ok !== OK) {
+      const msg = `[index.ts] Unable to generate QR Code: file: ${dict}, line: ${line_idx}\n${String(qr_ok)}`;
+      console.log(msg);
+
+      log(data_path, msg);
+      continue;
+    }
+
+    await exec(`../util/stream ${tmp_qr}`);
+
+    await sleep(3000);
 
     console.log(`> QR code under analysis: file: ${dict}, line: ${line_idx}`);
 
