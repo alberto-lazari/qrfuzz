@@ -22,6 +22,7 @@ The required dependencies can be installed and configured individually by using 
 ## Credits
 
 This project is based on the [original work](https://github.com/spritz-group/QRFuzz) of:
+
 - [Federico Carboni](https://github.com/Kero2375)
 - [Denis Donadel](https://github.com/donadelden)
 - [Mariano Sciacco](https://github.com/Maxelweb)
@@ -43,6 +44,7 @@ For the environment variables (`ANDROID_HOME`, `NVM_DIR`) you might need to play
 
 Be sure that your `~/.bashrc` gets called by scripts, i.e. there is nothing preventing it to be sourced by non-interactive shells. \
 It would appear something like this:
+
 ```bash
 [[ $- = *i* ]] || return
 ```
