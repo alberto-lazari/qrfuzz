@@ -1,7 +1,6 @@
 import path from "path";
 import fs from "fs";
 import { get_inspector } from "./inspector";
-import { AppId } from "./apps";
 
 // Default variables
 const app = process.argv[2] ?? "";
@@ -92,7 +91,7 @@ async function getAppInspector() {
 
   console.log("[QRCodeFuzzer] OK, starting Appium...");
 
-  return get_inspector(app as AppId);
+  return get_inspector(app);
 }
 
 const getApp = () => app;

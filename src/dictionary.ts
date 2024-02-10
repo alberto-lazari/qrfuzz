@@ -1,6 +1,5 @@
 import { opendir, readFile, writeFile } from "fs/promises";
 import path, { resolve } from "path";
-import { AppId } from "./apps";
 import { data_path } from "./loader";
 
 const DICTS_DIR = path.resolve(__dirname, "dicts/");
@@ -60,7 +59,7 @@ const read_lines = async (file: string): Promise<Uint8Array[]> => {
 };
 
 export const getState = async (
-  app: AppId,
+  app: string,
   files: string[]
 ): Promise<DictsIterStatus | null> => {
   const status: DictsIterStatus | null = await readFile(
@@ -120,7 +119,7 @@ export const saveState = async (status: DictsIterStatus) => {
 
 export const dicts_iterator = async (app: string, files: string[]) => {
   const _dicts = Promise.all(files.map(read_lines));
-  const status = await getState(app as AppId, files).catch((err) => {
+  const status = await getState(app, files).catch((err) => {
     throw `Error reading ${STATE_FILE}:\n\t${err}`;
   });
   const dicts = await _dicts;

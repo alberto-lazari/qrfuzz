@@ -2,13 +2,11 @@
  * Code translated from https://github.com/spritz-group/QRFuzz/blob/d2ff11/tools/QRCodeGenerator/qr_builder.py
  */
 
-import { AppId } from "./apps";
-
 type Builder = (payload: Uint8Array) => Uint8Array;
 
 type T = {
   standard: Builder;
-} & Partial<Record<AppId, Builder>>;
+} & Partial<Record<string, Builder>>;
 
 const concat = (...arr: (Uint8Array | string)[]): Uint8Array =>
   Buffer.concat(
@@ -100,7 +98,7 @@ export const generators: T = {
 };
 
 export const get_generator = (app: string) => {
-  const generator = generators[app as AppId];
+  const generator = generators[app];
   if (generator !== undefined) {
     return generator;
   } else {

@@ -1,5 +1,4 @@
 import { resolve } from "path";
-import { AppId } from "./apps";
 import { log } from "./logger";
 import { data_path } from "./loader";
 
@@ -22,7 +21,7 @@ type InspectorModule = {
   Inspector: new () => Inspector;
 };
 
-export const get_inspector = async (app: AppId) => {
+export const get_inspector = async (app: string) => {
   const module = (await import(
     resolve(__dirname, INSPECTORS_DIRNAME, app)
   )) as InspectorModule;
