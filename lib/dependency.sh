@@ -12,7 +12,8 @@ check () {
         [[ -n "$ANDROID_HOME" ]] ||
             export ANDROID_HOME="$HOME/Android/Sdk"
         which avdmanager &> /dev/null ||
-            export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH" which emulator &> /dev/null ||
+            export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH" 
+    	which emulator &> /dev/null ||
             export PATH="$ANDROID_HOME/emulator:$PATH"
         which adb &> /dev/null ||
             export PATH="$ANDROID_HOME/platform-tools:$PATH"
