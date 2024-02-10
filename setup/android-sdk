@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+cd "$(realpath "$(dirname "$BASH_SOURCE")")/.."
 
 log () {
     echo "[[1;34m$0[0m] $@"
@@ -16,10 +17,10 @@ error () {
 device=qrfuzz
 
 case "$(uname -m)" in
-    aarch64 | arm64)
-        arch=arm64-v8a ;;
     x86_64)
         arch=x86_64 ;;
+    aarch64 | arm64)
+        arch=arm64-v8a ;;
     *)  error CPU architecture not supported ;;
 esac
 
@@ -28,26 +29,8 @@ system_image="system-images;android-34;google_apis_playstore;$arch"
 case "$(uname)" in
     Linux)
         os=linux
-        [[ -n "$ANDROID_HOME" ]] || {
-            export ANDROID_HOME=~/Android/Sdk
-            log Environment variable ANDROID_HOME is not set >&2
-            read -p 'Do you want to add it to your ~/.bash_profile? (Y/n) ' answer >&2 
-            if [[ "$answer" != [Nn] ]]; then
-                echo 'export ANDROID_HOME="$HOME/Android/Sdk"' >> ~/.bash_profile
-            else
-                cat >&2 <<-EOF
-				You will need to manually set it, by writing the following line in your ~/.bash_profile
-				export ANDROID_HOME="\$HOME/Android/Sdk"
-
-				EOF
-            fi
-
-            cat >&2 <<- EOF
-			[!!] You might need to type \`source ~/.bash_profile\`
-			or log out and start a new session
-
-			EOF
-        }
+        [[ -n "$ANDROID_HOME" ]] ||
+            export ANDROID_HOME="$HOME/Android/Sdk"
         ;;
     *)  error OS not supported ;;
 esac
@@ -122,12 +105,18 @@ sdkmanager --version &> /dev/null || {
     fi
 }
 
-# Accept licenses
-yes | sdkmanager --install \
-    'platform-tools' \
-    'platforms;android-34' \
-    'build-tools;34.0.0' \
-    "$system_image"
+sdkmanager --list_installed |
+    grep -zq "build-tools;34\.0\.0.*emulator.*platform-tools.*platforms;android-34.*$system_image" ||
+{
+    log Installing Android SDK
+    # Accept licenses and install
+    yes | sdkmanager --install \
+        'platform-tools' \
+        'platforms;android-34' \
+        'build-tools;34.0.0' \
+        "$system_image"
+    ok Android SDK installed
+}
 
 # Create virtual device, if not present
 avdmanager list avd | grep -q "$device" || {
