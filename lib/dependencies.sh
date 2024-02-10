@@ -19,8 +19,7 @@ check () {
 
         which avdmanager &> /dev/null &&
             which emulator &> /dev/null &&
-            which adb &> /dev/null ||
-            return 1
+            which adb &> /dev/null
         ;;
     avd)
         [[ -n "$ANDROID_HOME" ]] ||
@@ -28,16 +27,13 @@ check () {
         which avdmanager &> /dev/null ||
             export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
 
-        avdmanager list avd 2> /dev/null | grep -q qrfuzz ||
-            return 1
+        avdmanager list avd 2> /dev/null | grep -q qrfuzz
         ;;
     v4l2loopback)
-        lsmod | grep -q v4l2loopback ||
-            return 1
+        lsmod | grep -q v4l2loopback
         ;;
     ffmpeg)
-        which ffmpeg &> /dev/null ||
-            return 1
+        which ffmpeg &> /dev/null
         ;;
     nvm_env)
         [[ -n "$NVM_DIR" ]] || export NVM_DIR="$HOME/.nvm"
@@ -45,25 +41,21 @@ check () {
         ;;
     nvm)
         check nvm_env
-        which nvm &> /dev/null ||
-            return 1
+        which nvm &> /dev/null
         ;;
     nodejs)
         check nvm_env
-        which npm &> /dev/null ||
-            return 1
+        which npm &> /dev/null
         ;;
     appium)
         check nodejs &&
             # Will fail when either the driver or appium itself are missing
             appium driver list --installed 2>&1 |
-            grep -q uiautomator2 ||
-            return 1
+            grep -q uiautomator2
         ;;
     fuzzer)
         check appium &&
-            ! npm list 2> /dev/null | grep -q 'UNMET DEPENDENCY' ||
-            return 1
+            ! npm list 2> /dev/null | grep -q 'UNMET DEPENDENCY'
         ;;
     *)
         error lib/dependencies.sh: dependency $1 not configured ;;
